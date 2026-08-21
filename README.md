@@ -20,11 +20,10 @@ logs/       日付ごとの作業ログ。後から書き換えない（その�
 reference/  現時点の事実をまとめた資料。状況が変わったら上書き更新する
 ```
 
-| ファイル | 内容 |
-|---|---|
-| [logs/2026-08-22-initial-setup.md](logs/2026-08-22-initial-setup.md) | 初期構築。Miniforge 導入 → ソースビルド → import 確認まで |
-| [reference/environment.md](reference/environment.md) | マシン構成と、実際に解決された依存パッケージのバージョン |
-| [reference/build-options.md](reference/build-options.md) | CMake / scikit-build のビルドオプションと挙動 |
+各ディレクトリの索引は、それぞれの README を参照。
+
+- [logs/README.md](logs/README.md) — 作業ログの一覧
+- [reference/README.md](reference/README.md) — 資料の一覧
 
 ## 運用ルール
 

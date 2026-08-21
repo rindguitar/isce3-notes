@@ -57,6 +57,10 @@
 `hdf5`・`cmake`・`cxx-compiler` も同じ構造なので、
 **ビルドや実行が壊れたときは、まず依存のメジャーバージョンを疑う。**
 
+なお、プロジェクトはこれとは別に**バージョンを完全固定した conda spec file** を
+持っている。次に依存起因で詰まったらそちらへの乗り換えを検討する。
+→ [runtime-and-packaging.md](runtime-and-packaging.md#-バージョン固定された-conda-spec-file-が存在する)
+
 ## `environment.yml` の全依存（参考）
 
 チャネル: `conda-forge` + `nodefaults` / 環境名: `isce3`
