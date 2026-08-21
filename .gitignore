@@ -1,0 +1,10 @@
+# エディタ / OS
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# 一時ファイル
+*.tmp
+*.log
+scratch/
