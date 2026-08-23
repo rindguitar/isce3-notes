@@ -111,8 +111,12 @@ cmake -S ~/isce3 -B ~/isce3-build -G Ninja \
   -DCMAKE_INSTALL_PREFIX=~/isce3-build/install
 cmake --build ~/isce3-build -j8
 cmake --install ~/isce3-build
-ctest --test-dir ~/isce3-build --output-on-failure
+GDAL_MEM_ENABLE_OPEN=YES ctest --test-dir ~/isce3-build --output-on-failure
 ```
+
+**基準値は 235/237**（約 10 分）。落ちる 2 件は既知
+（`geometry.geometry` = 最適化起因、`stage_dem` = upstream のバグ）。
+3 件以上落ちたら自分の変更を疑う。
 
 ### 開発用の環境変数
 

@@ -301,3 +301,22 @@ GCC は `-ffast-math` を付けない限り浮動小数点の意味論を変え�
 | pybind11 | `<3` → 2.13.6 |
 | 環境変数 | `GDAL_MEM_ENABLE_OPEN=YES` |
 | 既知の失敗 | `GeoToRdr`（最適化起因）、`stage_dem`（upstream バグ）、`io.background`（flaky） |
+
+## フル実行の結果 — 基準値の確定
+
+pybind11 降格による副作用がないことを、全 237 件で確認した。
+
+```
+99% tests passed, 2 tests failed out of 237
+Total Test time (real) = 608.87 sec
+
+The following tests FAILED:
+   41 - test.cxx.isce3.geometry.geometry.geometry (Failed)
+  211 - test.python.pkg.nisar.workflows.stage_dem (Failed)
+```
+
+**235/237 がこの環境の基準値。** 失敗する 2 件はどちらも既知で、原因も特定済み。
+`io.background` はこの回は通った（flaky なので回ごとに揺れる）。
+
+**今後 ctest を読むときは、この 2 件を「元から落ちているもの」として除外して判断する。**
+3 件以上落ちたら、それは自分の変更が原因である可能性が高い。
