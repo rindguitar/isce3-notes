@@ -35,8 +35,9 @@ reference/  現時点の事実をまとめた資料。状況が変わったら�
 ## 現在の状態
 
 - ISCE3 `0.26.0-dev` を **CPU ビルド**でインストール済み（CMake 直叩き / `~/isce3-build`）
-- `ctest` 実行可能。**233/237 成功**（`GDAL_MEM_ENABLE_OPEN=YES` 設定時）
-- 未解決の失敗が 2 件（pybind11 の型変換 / 数値収束）。いずれも仮説あり、検証未実施
+- `ctest` 実行可能。`GDAL_MEM_ENABLE_OPEN=YES` と `pybind11<3` で **234/237 の見込み**
+  （フル実行での最終確認は未実施）
+- 既知の失敗: `GeoToRdr`（最適化起因、未解決）、`stage_dem`（upstream バグ、対処不要）
 - GPU (CUDA) ビルドは未対応
 
 再現手順は [reference/environment.md](reference/environment.md)、

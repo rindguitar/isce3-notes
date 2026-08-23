@@ -233,3 +233,71 @@ upstream に既知の issue がある可能性が高い。
 **何か壊れたら、まず依存のメジャーバージョンを疑う。**
 根本的に避けるなら、[pinned な conda spec file](../reference/runtime-and-packaging.md) への
 乗り換えを検討する。
+
+---
+
+# 追記: 検証結果（同日）
+
+上記の仮説2件を検証した。ログは追記のみとするルールなので、上の記述は残したまま結論をここに書く。
+
+## 原因2 → ✅ 確定。pybind11 3.x が原因
+
+```bash
+conda install -n isce3 'pybind11<3'      # → 2.13.6
+cmake -S ~/isce3 -B ~/isce3-build -G Ninja -DISCE3_FETCH_DEPS=OFF -DWITH_CUDA=OFF \
+  -DCMAKE_INSTALL_PREFIX=$HOME/isce3-build/install
+cmake --build ~/isce3-build -j8 && cmake --install ~/isce3-build
+GDAL_MEM_ENABLE_OPEN=YES ctest --test-dir ~/isce3-build -R 'pntintersect' --output-on-failure
+# → 100% tests passed out of 1
+```
+
+**pybind11 2.13.6 で `pntintersect` は通る。** 仮説どおりだった。
+
+`Eigen::Matrix` の派生クラスを関数ポインタ経由で束縛した場合に、
+pybind11 3.x が Eigen の型変換器を適用できていない。
+
+**対処: `pybind11<3` に固定する。** ヘッダのみのビルド時依存なので、
+変更するたびに Python バインディングの再ビルドが必要。
+
+## 原因3 → ⚠️ 最適化起因と確定。ただし FMA ではない
+
+| ビルド構成 | `GeoToRdr` |
+|---|---|
+| `Debug` (`-O0`) | ✅ 通る |
+| `RelWithDebInfo` (`-O2`) | ❌ 落ちる |
+| `RelWithDebInfo` + `-ffp-contract=off` | ❌ 落ちる |
+
+Debug では `geometry_constlat` / `geometry` / `geometry_equator` の 3 件とも通る。
+
+### 解釈: 浮動小数点の丸め差ではなく、未定義動作(UB)の疑い
+
+GCC は `-ffast-math` を付けない限り浮動小数点の意味論を変えない。
+**FMA の縮約を止めてなお `-O0` と `-O2` で結果が変わる**のであれば、
+丸め差では説明がつかない。
+
+**`-O0` で通り `-O2` で落ちる**のは UB の典型的な兆候である。
+候補は未初期化変数、strict-aliasing 違反、符号付きオーバーフローなど。
+
+つまり「GCC 15 が悪い」のではなく、**isce3 側の潜在バグを新しい GCC の最適化が
+顕在化させた**可能性がある。upstream に既知の issue がないか確認する価値がある。
+
+### 未実施の切り分け
+
+| 方法 | 分かること | コスト |
+|---|---|---|
+| GCC を 15 未満に降格して再ビルド | GCC 15 固有かどうか | フル再ビルド（ccache も無効化される） |
+| UBSan (`-fsanitize=undefined`) 付きで最適化ビルド | UB の有無と場所 | フルビルド。原因まで分かる |
+| `-O1` で試す | どの最適化段階で壊れるか | フルビルド |
+
+**現時点では未対処のまま運用する。** 237 件中 1 件であり、
+開発を始める上での支障は小さい。
+ただし**「`GeoToRdr` は既知の失敗」と分かった上で ctest を読む**必要がある。
+
+## 確定した構成
+
+| 項目 | 値 |
+|---|---|
+| eigen | `<4` → 3.4.0 |
+| pybind11 | `<3` → 2.13.6 |
+| 環境変数 | `GDAL_MEM_ENABLE_OPEN=YES` |
+| 既知の失敗 | `GeoToRdr`（最適化起因）、`stage_dem`（upstream バグ）、`io.background`（flaky） |

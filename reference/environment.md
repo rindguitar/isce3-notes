@@ -38,7 +38,7 @@
 | **eigen** | **3.4.0** | `eigen>=3.3` | **手動で `eigen<4` に降格。** 既定では 5.0.1 が入りビルド失敗 |
 | **hdf5** | **2.2.0** | `hdf5>=1.10.2,!=1.14.0` | ⚠️ メジャー 2 系。上限指定がないため。潜在リスク |
 | **gdal** | **3.13.3** | `gdal>=3.6` | ⚠️ `MEM:::DATAPOINTER=` 構文が既定で無効化された。`GDAL_MEM_ENABLE_OPEN=YES` が必要 |
-| **pybind11** | **3.1.0** | `pybind11>=2.5` | ⚠️ メジャー 3 系。Eigen 派生型の変換が効かない疑い |
+| **pybind11** | **2.13.6** | `pybind11>=2.5` | **手動で `pybind11<3` に降格。** 既定では 3.1.0 が入り、Eigen 派生型の変換が効かずテストが落ちる |
 | fftw | 3.3.11 (nompi) | `fftw>=3.3` | |
 | numpy | 1.26.4 | `numpy>=1.20` | |
 | scipy | 1.17.1 | `scipy!=1.10.0` | |
@@ -58,10 +58,10 @@
 
 | 依存 | 入った版 | 症状 |
 |---|---|---|
-| eigen | 5.0.1 | ビルドが通らない → `eigen<4` に降格して解決 |
-| gdal | 3.13.3 | テスト 3 件失敗 → `GDAL_MEM_ENABLE_OPEN=YES` で解決 |
-| pybind11 | 3.1.0 | テスト 1 件失敗（仮説、未検証） |
-| cxx-compiler (gcc) | 15.3.0 | 数値収束テスト 1 件失敗（仮説、未検証） |
+| eigen | 5.0.1 | ビルドが通らない → **`eigen<4` に降格して解決** |
+| gdal | 3.13.3 | テスト 3 件失敗 → **`GDAL_MEM_ENABLE_OPEN=YES` で解決** |
+| pybind11 | 3.1.0 | テスト 1 件失敗 → **`pybind11<3` に降格して解決**（検証済み） |
+| cxx-compiler (gcc) | 15.3.0 | `GeoToRdr` が失敗。**最適化起因と確定、未解決**（`-O0` で通り `-O2` で落ちる。FMA は無関係で、UB の疑い） |
 
 詳細は [2026-08-23 ctest 失敗の切り分け](../logs/2026-08-23-test-failures.md) を参照。
 
@@ -95,7 +95,8 @@ CUDA 関連は**一切含まれていない**。
 source ~/miniforge3/etc/profile.d/conda.sh
 cd ~/isce3
 conda env create -f environment.yml
-conda install -n isce3 'eigen<4' ccache    # eigen<4 は必須。これが無いとビルドが通らない
+# eigen<4 と pybind11<3 は必須。どちらも既定では新しすぎる版が入って壊れる
+conda install -n isce3 'eigen<4' 'pybind11<3' ccache
 conda activate isce3
 ```
 
