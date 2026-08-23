@@ -18,18 +18,21 @@ ISCE3 は NASA JPL の InSAR / SAR 処理ライブラリ（C++ / CUDA コア + P
 ```
 logs/       日付ごとの作業ログ。後から書き換えない（そのときの記録として残す）
 reference/  現時点の事実をまとめた資料。状況が変わったら上書き更新する
+glossary/   技術・用語の解説。「そもそもそれは何か」を置く
 ```
 
 各ディレクトリの索引は、それぞれの README を参照。
 
 - [logs/README.md](logs/README.md) — 作業ログの一覧
 - [reference/README.md](reference/README.md) — 資料の一覧
+- [glossary/README.md](glossary/README.md) — 用語集の一覧
 
 ## 運用ルール
 
 - `logs/` は `YYYY-MM-DD-<短い題名>.md`。**追記のみ、過去のログは修正しない。**
   「そのとき何が起きたか」を残すのが目的なので、後から正しくしない。
 - 内容が古くなった事実は `reference/` 側を直す。
+- 新しい用語に出会ったら `glossary/` の該当ファイルに追記する。
 - パスは `~/...` で書く。ユーザ名を含む絶対パスは書かない。
 
 ## 現在の状態
