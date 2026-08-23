@@ -1,6 +1,6 @@
 # 環境スナップショット
 
-最終更新: 2026-08-22 / ISCE3 `0.26.0-dev+0d1600d8`（HEAD = `0d1600d8`）
+最終更新: 2026-08-23 / ISCE3 `0.26.0-dev+0d1600d8`（HEAD = `0d1600d8`）
 
 状況が変わったらこのファイルを上書き更新する。
 
@@ -37,7 +37,8 @@
 | python | 3.12.13 | `python>=3.8` | |
 | **eigen** | **3.4.0** | `eigen>=3.3` | **手動で `eigen<4` に降格。** 既定では 5.0.1 が入りビルド失敗 |
 | **hdf5** | **2.2.0** | `hdf5>=1.10.2,!=1.14.0` | ⚠️ メジャー 2 系。上限指定がないため。潜在リスク |
-| gdal | 3.13.3 | `gdal>=3.6` | |
+| **gdal** | **3.13.3** | `gdal>=3.6` | ⚠️ `MEM:::DATAPOINTER=` 構文が既定で無効化された。`GDAL_MEM_ENABLE_OPEN=YES` が必要 |
+| **pybind11** | **3.1.0** | `pybind11>=2.5` | ⚠️ メジャー 3 系。Eigen 派生型の変換が効かない疑い |
 | fftw | 3.3.11 (nompi) | `fftw>=3.3` | |
 | numpy | 1.26.4 | `numpy>=1.20` | |
 | scipy | 1.17.1 | `scipy!=1.10.0` | |
@@ -53,8 +54,18 @@
 `environment.yml` は**ほぼ全て下限のみの指定**で、上限がない。
 そのため conda は常に最新を入れようとし、メジャーバージョンが上がった依存で壊れる。
 
-実際に踏んだのが Eigen（3 系を期待しているところに 5.0.1）。
-`hdf5`・`cmake`・`cxx-compiler` も同じ構造なので、
+**これまでに 4 つの依存で実際に顕在化している。**
+
+| 依存 | 入った版 | 症状 |
+|---|---|---|
+| eigen | 5.0.1 | ビルドが通らない → `eigen<4` に降格して解決 |
+| gdal | 3.13.3 | テスト 3 件失敗 → `GDAL_MEM_ENABLE_OPEN=YES` で解決 |
+| pybind11 | 3.1.0 | テスト 1 件失敗（仮説、未検証） |
+| cxx-compiler (gcc) | 15.3.0 | 数値収束テスト 1 件失敗（仮説、未検証） |
+
+詳細は [2026-08-23 ctest 失敗の切り分け](../logs/2026-08-23-test-failures.md) を参照。
+
+`hdf5` も同じ構造（2.2.0 が入っている）なので、いずれ出る可能性がある。
 **ビルドや実行が壊れたときは、まず依存のメジャーバージョンを疑う。**
 
 なお、プロジェクトはこれとは別に**バージョンを完全固定した conda spec file** を
@@ -78,12 +89,51 @@ CUDA 関連は**一切含まれていない**。
 
 ## 環境の再現手順
 
+### 依存環境（共通）
+
 ```bash
 source ~/miniforge3/etc/profile.d/conda.sh
 cd ~/isce3
 conda env create -f environment.yml
-conda install -n isce3 'eigen<4'          # ← 必須。これが無いとビルドが通らない
+conda install -n isce3 'eigen<4' ccache    # eigen<4 は必須。これが無いとビルドが通らない
 conda activate isce3
+```
+
+### 開発用ビルド（CMake 直叩き / 現在こちらを使用）
+
+ビルドディレクトリを**リポジトリの外**に置くことで `~/isce3` を汚さない。
+
+```bash
+cmake -S ~/isce3 -B ~/isce3-build -G Ninja \
+  -DISCE3_FETCH_DEPS=OFF \
+  -DWITH_CUDA=OFF \
+  -DCMAKE_INSTALL_PREFIX=~/isce3-build/install
+cmake --build ~/isce3-build -j8
+cmake --install ~/isce3-build
+ctest --test-dir ~/isce3-build --output-on-failure
+```
+
+### 開発用の環境変数
+
+`$CONDA_PREFIX/etc/conda/activate.d/isce3-dev.sh` に置く。
+`~/.bashrc` ではなくここに置くと、`conda activate isce3` したときだけ有効になり、
+他の環境に漏れない。リポジトリも汚さない。
+
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(realpath ~/isce3-build/install/lib*)
+export PYTHONPATH=$PYTHONPATH:$(realpath ~/isce3-build/install/packages)
+export GDAL_MEM_ENABLE_OPEN=YES    # これが無いと GDAL 関連テスト 3 件が落ちる
+```
+
+### 動作確認のみでよい場合（pip ビルド）
+
+`ctest` は使えないが、リポジトリ内にビルドディレクトリを作らない。
+
+```bash
 pip install . -C cmake.define.WITH_CUDA=OFF
 python3 -c 'import isce3; print(isce3.__version__)'
 ```
+
+なお pip 版と CMake 版を同居させると `sys.path` の優先順位で
+どちらを見ているか分からなくなるため、CMake 版に移る際は
+`pip uninstall isce3` しておく。

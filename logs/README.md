@@ -12,4 +12,5 @@
 
 | 日付 | ログ | 内容 |
 |---|---|---|
-| 2026-08-22 | [初期構築](2026-08-22-initial-setup.md) | Miniforge 導入 → conda 環境作成 → CPU ビルド → `import isce3` まで。詰まった点 3 件（conda が PATH に無い / Eigen 5.0.1 の不一致 / nvcc 自動検出）とその原因 |
+| 2026-08-23 | [ctest 失敗の切り分け](2026-08-23-test-failures.md) | 237 件中 7 件失敗の原因を 4 系統に分離。GDAL 3.13 の仕様変更（解決済）、pybind11 3.x の型変換（仮説）、数値収束（仮説）、upstream バグ、flaky |
+| 2026-08-23 | [初期構築](2026-08-23-initial-setup.md) | Miniforge 導入 → conda 環境作成 → CPU ビルド → `import isce3` まで。詰まった点 3 件（conda が PATH に無い / Eigen 5.0.1 の不一致 / nvcc 自動検出）とその原因 |

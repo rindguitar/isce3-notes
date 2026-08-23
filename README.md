@@ -34,11 +34,13 @@ reference/  現時点の事実をまとめた資料。状況が変わったら�
 
 ## 現在の状態
 
-- ISCE3 `0.26.0-dev` を **CPU ビルド**でインストール済み、`import isce3` 通過
+- ISCE3 `0.26.0-dev` を **CPU ビルド**でインストール済み（CMake 直叩き / `~/isce3-build`）
+- `ctest` 実行可能。**233/237 成功**（`GDAL_MEM_ENABLE_OPEN=YES` 設定時）
+- 未解決の失敗が 2 件（pybind11 の型変換 / 数値収束）。いずれも仮説あり、検証未実施
 - GPU (CUDA) ビルドは未対応
-- `ctest` によるテスト実行は未対応（CMake 直叩きビルドが必要）
 
-詳細は [logs/2026-08-22-initial-setup.md](logs/2026-08-22-initial-setup.md) の「残課題」を参照。
+再現手順は [reference/environment.md](reference/environment.md)、
+残課題は各ログの末尾を参照。
 
 ## 参考リンク
 

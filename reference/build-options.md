@@ -1,6 +1,6 @@
 # ISCE3 のビルドオプションと挙動
 
-最終更新: 2026-08-22 / `0.26.0-dev` の `CMakeLists.txt`・`pyproject.toml` を読んで整理したもの。
+最終更新: 2026-08-23 / `0.26.0-dev` の `CMakeLists.txt`・`pyproject.toml` を読んで整理したもの。
 
 ## ビルド方法は 2 通り
 
