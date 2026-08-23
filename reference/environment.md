@@ -118,16 +118,83 @@ GDAL_MEM_ENABLE_OPEN=YES ctest --test-dir ~/isce3-build --output-on-failure
 （`geometry.geometry` = 最適化起因、`stage_dem` = upstream のバグ）。
 3 件以上落ちたら自分の変更を疑う。
 
-### 開発用の環境変数
+### 開発用の環境変数（conda の activate フック）
 
-`$CONDA_PREFIX/etc/conda/activate.d/isce3-dev.sh` に置く。
-`~/.bashrc` ではなくここに置くと、`conda activate isce3` したときだけ有効になり、
-他の環境に漏れない。リポジトリも汚さない。
+**これが無いと、新しいシェルで `import isce3` が通らない。**
+`ctest` は CMake がパスを埋め込むので動くが、対話的な Python からは見えない。
+
+`~/.bashrc` ではなく conda 環境の中に置く。`conda activate isce3` したときだけ
+有効になり、他の環境に漏れない。リポジトリも汚さない。
+不要になれば下記 2 ファイルを消すだけで元に戻る。
+
+**`$CONDA_PREFIX/etc/conda/activate.d/isce3-dev.sh`**
+
+```sh
+#!/bin/sh
+# ISCE3 開発ビルド用の設定
+#   ~/isce3-build に CMake でビルド・インストールしたものを import できるようにする。
+#   元の値は _ISCE3_OLD_* に退避し、deactivate.d 側で復元する。
+
+_ISCE3_INSTALL="$HOME/isce3-build/install"
+
+export _ISCE3_OLD_PYTHONPATH="${PYTHONPATH:-}"
+export _ISCE3_OLD_LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}"
+export _ISCE3_OLD_GDAL_MEM_ENABLE_OPEN="${GDAL_MEM_ENABLE_OPEN:-}"
+
+if [ -d "$_ISCE3_INSTALL/packages" ]; then
+    export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$_ISCE3_INSTALL/packages"
+fi
+
+for _isce3_libdir in "$_ISCE3_INSTALL"/lib "$_ISCE3_INSTALL"/lib64; do
+    if [ -d "$_isce3_libdir" ]; then
+        export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$_isce3_libdir"
+    fi
+done
+unset _isce3_libdir _ISCE3_INSTALL
+
+# GDAL は MEM:::DATAPOINTER= 構文をセキュリティ上の理由で既定無効にした。
+# ISCE3 がこの構文を使うため、有効化しないと GDAL 関連テストが 3 件落ちる。
+export GDAL_MEM_ENABLE_OPEN=YES
+```
+
+**`$CONDA_PREFIX/etc/conda/deactivate.d/isce3-dev.sh`**
+
+deactivate 側も作らないと `PYTHONPATH` が他の conda 環境へ漏れる。
+
+```sh
+#!/bin/sh
+# activate.d/isce3-dev.sh が退避した値を復元する
+
+if [ -n "${_ISCE3_OLD_PYTHONPATH:-}" ]; then
+    export PYTHONPATH="$_ISCE3_OLD_PYTHONPATH"
+else
+    unset PYTHONPATH
+fi
+
+if [ -n "${_ISCE3_OLD_LD_LIBRARY_PATH:-}" ]; then
+    export LD_LIBRARY_PATH="$_ISCE3_OLD_LD_LIBRARY_PATH"
+else
+    unset LD_LIBRARY_PATH
+fi
+
+if [ -n "${_ISCE3_OLD_GDAL_MEM_ENABLE_OPEN:-}" ]; then
+    export GDAL_MEM_ENABLE_OPEN="$_ISCE3_OLD_GDAL_MEM_ENABLE_OPEN"
+else
+    unset GDAL_MEM_ENABLE_OPEN
+fi
+
+unset _ISCE3_OLD_PYTHONPATH _ISCE3_OLD_LD_LIBRARY_PATH _ISCE3_OLD_GDAL_MEM_ENABLE_OPEN
+```
+
+#### 動作確認
 
 ```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(realpath ~/isce3-build/install/lib*)
-export PYTHONPATH=$PYTHONPATH:$(realpath ~/isce3-build/install/packages)
-export GDAL_MEM_ENABLE_OPEN=YES    # これが無いと GDAL 関連テスト 3 件が落ちる
+conda activate isce3
+python3 -c 'import isce3; print(isce3.__version__, isce3.__file__)'
+# → 0.26.0-dev+0d1600d8
+#   ~/isce3-build/install/packages/isce3/__init__.py
+conda deactivate
+echo "${PYTHONPATH:-(未設定)}"   # → (未設定) に戻る
 ```
 
 ### 動作確認のみでよい場合（pip ビルド）
