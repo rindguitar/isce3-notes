@@ -8,11 +8,13 @@
 
 ## 起動方法
 
-このリポジトリ（`~/isce3-notes`）を作業ディレクトリとして起動し、ISCE3 本体を追加する。
+**`~/isce3-notes` を主フォルダにして起動する。** このファイルは起点から親方向へ
+探索されるため、`~/isce3` を起点にすると（兄弟ディレクトリなので）永久に見つからない。
 
-```bash
-cd ~/isce3-notes && claude --add-dir ~/isce3
-```
+| 使う版 | 方法 |
+|---|---|
+| ターミナル | `cd ~/isce3-notes && claude --add-dir ~/isce3` |
+| VS Code 拡張 | `~/isce3-notes/isce3.code-workspace` を開く（マルチルート） |
 
 **`~/isce3` にはこのファイルを置かない。** upstream の fork なので、
 追跡対象外のファイルを増やしたくないため。
@@ -20,6 +22,8 @@ cd ~/isce3-notes && claude --add-dir ~/isce3
 `--add-dir` が必要なのは**起動時のみ**。`/clear` はプロセスを終了させず
 会話履歴を消すだけなので、カレントディレクトリも追加ディレクトリも維持され、
 このファイルは新しい文脈に再読み込みされる。起動後に追加したい場合は `/add-dir <パス>`。
+
+詳細は [glossary/07-claude-code.md](glossary/07-claude-code.md)。
 
 ## プロジェクト概要
 

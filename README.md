@@ -17,6 +17,7 @@ ISCE3 は NASA JPL の InSAR / SAR 処理ライブラリ（C++ / CUDA コア + P
 
 ```
 CLAUDE.md    Claude Code 用のガイド。~/isce3 ではなくここに置いている
+isce3.code-workspace  VS Code 用。~/isce3-notes と ~/isce3 を1つのワークスペースにまとめる
 STATUS.md    現在地・次の一手・未解決事項。セッション終了時に必ず更新する
 decisions.md 設計判断の記録。何をなぜ選び、何を却下したか
 
@@ -27,13 +28,19 @@ glossary/    技術・用語の解説。「そもそもそれは何か」を置�
 
 ### Claude Code の起動方法
 
-```bash
-cd ~/isce3-notes && claude --add-dir ~/isce3
-```
+| 使う版 | 方法 |
+|---|---|
+| ターミナル | `cd ~/isce3-notes && claude --add-dir ~/isce3` |
+| VS Code 拡張 | `isce3.code-workspace` を開く |
 
-`CLAUDE.md` は起動時のカレントディレクトリから探索されるため、
-このリポジトリから起動する。`--add-dir` で ISCE3 本体も作業対象に加わる。
-**`~/isce3` には何も置かない。**
+`CLAUDE.md` は**起点から親方向へしか探索されない**。
+`~/isce3` を起点にすると `~/isce3-notes` は兄弟ディレクトリなので見つからない。
+だから**このリポジトリを起点にする**。**`~/isce3` には何も置かない。**
+
+`/clear` では何もし直さなくてよい（作業ディレクトリも追加ディレクトリも維持される）。
+ただし会話の記憶は消えるので、**`/clear` の前に `STATUS.md` を更新する**。
+
+仕組みの詳細は [glossary/07-claude-code.md](glossary/07-claude-code.md)。
 
 各ディレクトリの索引は、それぞれの README を参照。
 

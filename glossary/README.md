@@ -18,6 +18,7 @@ ISCE3 を触るうえで出てくる技術・用語の解説。初歩から書�
 | 04 | [git.md](04-git.md) | git、fork、`upstream`、PR。OSS への参加手順 |
 | 05 | [testing.md](05-testing.md) | ctest / gtest / pytest。テストの読み方 |
 | 06 | [sar.md](06-sar.md) | SAR / InSAR / NISAR のドメイン用語 |
+| 07 | [claude-code.md](07-claude-code.md) | Claude Code の仕組み。`CLAUDE.md` の探索規則、`/clear`、ワークスペース |
 
 ## 書き方の方針
 
