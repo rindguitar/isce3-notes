@@ -82,6 +82,34 @@ VS Code は 1 つのワークスペースに複数フォルダを含められる
 > 「`CLAUDE.md` があるフォルダを主フォルダにする」ほうが確実なので、
 > 逆向き（`~/isce3` を開いて `/add-dir ~/isce3-notes`）は避けている。
 
+### VS Code フォークでも同じ（Antigravity で確認済み）
+
+**この環境では Antigravity を使っている。** Antigravity は VS Code のフォークなので、
+`.code-workspace` はそのまま機能する。2026-08-23 に動作確認済み:
+
+```
+File → Open Workspace from File... → ~/isce3-notes/isce3.code-workspace
+```
+
+結果: カレントディレクトリ `~/isce3-notes` / `~/isce3` 参照可 /
+`CLAUDE.md` と `STATUS.md`（@import 経由）とも読み込み済み。
+
+Cursor や Windsurf など他の VS Code フォークでも同様に動くと思われる（未確認）。
+
+### ⚠️ `CLAUDE.md` は Claude Code 専用
+
+**IDE 内蔵のエージェントは `CLAUDE.md` を読まない。**
+各ツールが自分の設定ファイル名を持っているため。
+
+| 使うもの | `CLAUDE.md` のルール |
+|---|---|
+| Claude Code 拡張 | ✅ 効く |
+| Antigravity 内蔵エージェント（Gemini ベース） | ❌ 効かない |
+
+つまり **「`~/isce3` のソースを許可なく読まない」というルールも内蔵エージェントには
+適用されない。** 使い分けるなら意識しておく。
+Antigravity 側にも同等のルールファイルの仕組みがあるはずだが、名前と書式は未確認。
+
 ## `/clear` の挙動
 
 **会話履歴を消すだけ。CLI のプロセスは終了しない。**
