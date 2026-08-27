@@ -19,6 +19,7 @@ ISCE3 を触るうえで出てくる技術・用語の解説。初歩から書�
 | 05 | [testing.md](05-testing.md) | ctest / gtest / pytest。テストの読み方 |
 | 06 | [sar.md](06-sar.md) | SAR / InSAR / NISAR のドメイン用語 |
 | 07 | [claude-code.md](07-claude-code.md) | Claude Code の仕組み。`CLAUDE.md` の探索規則、`/clear`、ワークスペース |
+| 08 | [disciplines.md](08-disciplines.md) | 06 の背景。ISCE3 を支える学問分野と、どこから勉強するか |
 
 ## 書き方の方針
 
