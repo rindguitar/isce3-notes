@@ -26,13 +26,23 @@
 - `core` / `geometry` を外から叩き、楕円体・軌道補間・rdr2geo / geo2rdr・スワス断面を実測
 - **`Orbit` が参照エポックを付け替える**ことを発見（知らないと地上 750 km ずれる）
 - **地上間隔は近距離ほど広い**（Δ地上 ≈ Δ斜距離 / sin 入射角）ことを実測
-- `glossary/08-disciplines.md`（学問分野）を追加、`glossary/06-sar.md` に確認済み項目を追記
+- 用語集に「学問分野」の章を追加し、SAR の章に確認済み項目を追記（現在は wiki）
+
+2026-08-27（3 本目）: **記録の置き場所を再編。**
+
+- **用語集を wiki へ移し、1 ページ 1 概念の 42 ページに再編**（https://github.com/rindguitar/isce3-notes/wiki）。本体は作業の記録に絞る
+- リンクを実測して[ドキュメントマップ](https://github.com/rindguitar/isce3-notes/wiki/Documentation-Map)を作成。孤立ページなし
+- ⚠️ **wiki は別リポジトリなので、セッションから直接は読み書きできない。**
+  用語集に追記するには `git clone https://github.com/rindguitar/isce3-notes.wiki.git` が要る
+- NISAR の実データ取得手順を wiki に起こした（https://github.com/rindguitar/isce3-notes/wiki/NISAR-Data-Access）。**未検証**
+- 図を 8 枚作成（本体 1 枚 / wiki 7 枚）。`mermaid-guide.md` をこのリポジトリ用に書き直した
 
 2026-08-23: 環境構築。**ctest の基準値 235/237 を確定。** `~/isce3-notes` を整備。
 
 ## 次の一手（優先順）
 
-**着手先が未決定。** 候補は 3 つで、いずれも `~/isce3` の読み取り許可が要る。
+**着手先が未決定。** 候補は 4 つ。1〜3 は `~/isce3` の読み取り許可が要る。
+4 は許可不要で、成功すれば射程がいちばん広がる。
 
 1. **#255 `DateTime` の TZ 指定子未対応**（第一候補）
    - 再現済み・未着手・修正範囲が 1 関数（`cxx/isce3/core/DateTime.cpp` の `strptime`、413 行目付近）
@@ -45,6 +55,12 @@
    - ビルドとテストは**ユーザーが実行する**
 3. **#199 GDAL 3.12 の `SetGeoTransform` API 変更への追従**
    - 手元は GDAL 3.13.3 なので検証可能。機械的だが変更範囲が広がる可能性
+4. **NISAR の実データを 1 シーン取得する**（2026-08-27 に開いた選択肢）
+   - 手順は wiki の [NISAR Data Access](https://github.com/rindguitar/isce3-notes/wiki/NISAR-Data-Access)。
+     **未検証なので、まず本当に落とせるかを確かめるところから**
+   - これができると**仕様適合系の約 40 件が射程に入る**。
+     いまは実データがなくて確認すらできず、着手候補から外している状態
+   - まず **GCOV を 1 シーン**。地図座標なので中身の解釈が楽。HDF5 の階層構造を見る
 
 ### 任意（急がない）
 
@@ -100,7 +116,7 @@
 - 2026-08-27: 最初の題材として**幾何（rdr2geo / geo2rdr）**を選んだ
 - 2026-08-23: ビルドは `pip install .` ではなく **CMake 直叩き** → `ctest` と差分ビルドのため
 - 2026-08-23: ビルドディレクトリを**リポジトリの外**（`~/isce3-build`）に置く
-- 2026-08-23: メモは fork の wiki ではなく**独立した private リポジトリ**
+- 2026-08-23: メモは fork の wiki ではなく**独立したリポジトリ**（公開。wiki を使うため）
 - 2026-08-23: `CLAUDE.md` は `~/isce3-notes` に置き、`--add-dir ~/isce3` で運用する
 
 詳細は `decisions.md`

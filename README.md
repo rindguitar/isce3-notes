@@ -24,8 +24,9 @@ mermaid-guide.md  図を作るときの手順と原則。図を足したらこ�
 
 logs/        日付ごとの作業ログ。後から書き換えない（そのときの記録として残す）
 reference/   現時点の事実をまとめた資料。状況が変わったら上書き更新する
-glossary/    技術・用語の解説。「そもそもそれは何か」を置く
 ```
+
+**用語集（そもそもそれは何か）は wiki にある** → https://github.com/rindguitar/isce3-notes/wiki
 
 ### 3 つのパスの関係
 
@@ -34,7 +35,7 @@ flowchart LR
     UP["本家<br/>isce-framework/isce3"]
     SRC["ソース<br/>~/isce3<br/>本家の fork"]
     BUILD["ビルド先<br/>~/isce3-build<br/>リポジトリの外"]
-    NOTES["このリポジトリ<br/>~/isce3-notes<br/>ログ・資料・用語集"]
+    NOTES["このリポジトリ<br/>~/isce3-notes<br/>ログ・資料・判断"]
 
     UP -->|"fork してクローン"| SRC
     SRC -->|"CMake でビルド"| BUILD
@@ -43,7 +44,7 @@ flowchart LR
 
 `~/isce3` には**このリポジトリのファイルもビルド生成物も置かない**。
 記録はここ（`~/isce3-notes`）に、ビルドは `~/isce3-build` に分けてある。
-PR を出すまでの流れは [glossary/04-git.md](glossary/04-git.md) の図を参照。
+PR を出すまでの流れは [ブランチとプルリクエスト](https://github.com/rindguitar/isce3-notes/wiki/Pull-Request) の図を参照。
 
 ### Claude Code の起動方法
 
@@ -59,20 +60,26 @@ PR を出すまでの流れは [glossary/04-git.md](glossary/04-git.md) の図�
 `/clear` では何もし直さなくてよい（作業ディレクトリも追加ディレクトリも維持される）。
 ただし会話の記憶は消えるので、**`/clear` の前に `STATUS.md` を更新する**。
 
-仕組みの詳細は [glossary/07-claude-code.md](glossary/07-claude-code.md)。
+仕組みの詳細は wiki の [CLAUDE.md の読まれ方](https://github.com/rindguitar/isce3-notes/wiki/Claude-Code-Setup)。
 
 各ディレクトリの索引は、それぞれの README を参照。
 
 - [logs/README.md](logs/README.md) — 作業ログの一覧
 - [reference/README.md](reference/README.md) — 資料の一覧
-- [glossary/README.md](glossary/README.md) — 用語集の一覧
+
+用語集は wiki にある。
+
+- [用語集（wiki）](https://github.com/rindguitar/isce3-notes/wiki) — 42 ページ。ジャンル別に畳んである
+- [ドキュメントマップ](https://github.com/rindguitar/isce3-notes/wiki/Documentation-Map) — 42 ページが実際にどう繋がっているかの図
 
 ## 運用ルール
 
 - `logs/` は `YYYY-MM-DD-<短い題名>.md`。**追記のみ、過去のログは修正しない。**
   「そのとき何が起きたか」を残すのが目的なので、後から正しくしない。
 - 内容が古くなった事実は `reference/` 側を直す。
-- 新しい用語に出会ったら `glossary/` の該当ファイルに追記する。
+- 新しい用語・概念に出会ったら **wiki の用語集**に追記する。
+  wiki は本体とは別の git リポジトリなので、編集するには clone が要る。
+  `git clone https://github.com/rindguitar/isce3-notes.wiki.git`
 - パスは `~/...` で書く。ユーザ名を含む絶対パスは書かない。
 - 図を追加・更新するときは [mermaid-guide.md](mermaid-guide.md) に従う。**PNG はコミットせず** ` ```mermaid ` フェンスで埋め込む。
 

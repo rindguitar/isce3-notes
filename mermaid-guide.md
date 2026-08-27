@@ -3,7 +3,7 @@
 このリポジトリに図を追加・更新するときの手順と原則。
 
 別プロジェクトで図を作った際に**読みにくさを指摘されて 3 回作り直した**経験をもとにしている。
-2026-08-27 にこのリポジトリ用へ書き直し、そのとき図を 5 枚作って得た知見を足した。
+2026-08-27 にこのリポジトリ用へ書き直し、そのとき図を 8 枚作って得た知見を足した。
 
 ---
 
@@ -38,7 +38,7 @@
 | 図 | 矢印 | 理由 |
 |---|---|---|
 | リポジトリ配置（`README.md`） | **使う** | 「fork してクローンする」「ビルド先はここ」という向きが図の中身そのもの |
-| 座標変換（`glossary/06-sar.md`） | **使う** | `rdr2geo` と `geo2rdr` は互いに逆向き。**向きが名前の意味そのもの** |
+| 座標変換（wiki の `06 SAR / InSAR`） | **使う** | `rdr2geo` と `geo2rdr` は互いに逆向き。**向きが名前の意味そのもの** |
 | 用語同士の関連を描く場合 | **使わない** | 「関連している」ことしか表さない。向きは表に書けば足りる |
 
 矢印は情報を 1 つ増やすが、読む負荷も増やす。**その向きが無いと図が成立しないか**で判断する。
@@ -62,7 +62,7 @@
 
 交差するかどうかは、ほぼ**1 枚あたりの線の本数**で決まる。実測では**1 枚 10 本前後**が上限。
 
-このリポジトリの 5 枚は、いずれも **2〜7 本**に収めてある。
+このリポジトリの 8 枚は、いずれも **2〜6 本**に収めてある。
 
 ---
 
@@ -72,7 +72,7 @@
 
 密に繋がりあうものを 1 つの箱にまとめる。箱の中の線は図から消えるので、線が大きく減る。
 
-**実例（`glossary/06-sar.md` の座標変換図）:**
+**実例（wiki `rdr2geo / geo2rdr` の座標変換図）:**
 最初は入力 5 個（方位時刻・斜距離・軌道・ドップラ・地形）をそれぞれソルバへ繋いで **5 本**だった。
 「レーダ座標」「地図座標」の 2 つの箱にまとめ、**2 本**になった。
 
@@ -94,7 +94,7 @@
 別の箱と点線を横切った。
 
 対処は**循環を別の図に切り出すこと。**
-`README.md` の図からは PR の流れを落とし、`glossary/04-git.md` の
+`README.md` の図からは PR の流れを落とし、wiki `ブランチとプルリクエスト` の
 「upstream 追従から PR まで」の図に任せた。結果、どちらも一直線になり交差が消えた。
 
 ### 手順 3: 分ける
@@ -113,7 +113,7 @@
 図を読みやすくするために情報を捨ててはいけない。
 
 座標変換図で落とした「3 つの拘束」の内訳は、
-`glossary/06-sar.md` の表に残してある。図と表がセットで初めて成立する。
+wiki `rdr2geo / geo2rdr` の表に残してある。図と表がセットで初めて成立する。
 
 ---
 
@@ -180,10 +180,13 @@ Mermaid は**宣言する順序でレイアウトが変わる。**
 | 図 | 置き場所 | 何を表すか | 線 |
 |---|---|---|---|
 | 3 つのパスの関係 | [README.md](README.md) | `~/isce3` `~/isce3-build` `~/isce3-notes` の役割と、本家との関係 | 3 |
-| 座標変換 | [glossary/06-sar.md](glossary/06-sar.md) | `rdr2geo` と `geo2rdr` が繋ぐ 2 つの座標系 | 2 |
-| 処理の段と学問分野 | [glossary/08-disciplines.md](glossary/08-disciplines.md) | どの工程がどの分野に対応するか | 6 |
-| ビルドからテストまで | [glossary/02-build.md](glossary/02-build.md) | ソースから `import isce3` までの流れ | 6 |
-| 貢献の流れ | [glossary/04-git.md](glossary/04-git.md) | upstream 追従から PR・レビュー待ちまで | 5 |
+| 座標変換 | [rdr2geo / geo2rdr](https://github.com/rindguitar/isce3-notes/wiki/Rdr2geo-Geo2rdr) | `rdr2geo` と `geo2rdr` が繋ぐ 2 つの座標系 | 2 |
+| 処理の段と学問分野 | [学問分野](https://github.com/rindguitar/isce3-notes/wiki/Disciplines) | どの工程がどの分野に対応するか | 6 |
+| ビルドからテストまで | [ビルドの全体像](https://github.com/rindguitar/isce3-notes/wiki/Build-Overview) | ソースから `import isce3` までの流れ | 6 |
+| 貢献の流れ | [ブランチとプルリクエスト](https://github.com/rindguitar/isce3-notes/wiki/Pull-Request) | upstream 追従から PR・レビュー待ちまで | 5 |
+| ISCE3 の中身のジャンル相関 | [ドキュメントマップ](https://github.com/rindguitar/isce3-notes/wiki/Documentation-Map) | SAR / 幾何 / NISAR / 学問分野の繋がり | 5 |
+| 開発環境のジャンル相関 | [ドキュメントマップ](https://github.com/rindguitar/isce3-notes/wiki/Documentation-Map) | 環境 → ビルド → テスト → git の一本道 | 5 |
+| NISAR データの取得 | [NISAR Data Access](https://github.com/rindguitar/isce3-notes/wiki/NISAR-Data-Access) | Earthdata Login から受け取りまで | 4 |
 
 **図を足したらこの表も更新する。** どこに何があるか分からなくなると、
 同じ図を 2 箇所に置いたり、内容がずれたまま放置されたりする。

@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 このファイルは Claude Code が **ISCE3 の開発**を手伝う際のガイド。
-**このファイルは薄く保つこと。** 詳細は `reference/` と `glossary/` に置き、
+**このファイルは薄く保つこと。** 詳細は `reference/` と **wiki の用語集**に置き、
 必要時のみ参照する（末尾の「参照ドキュメント」）。
 
 @STATUS.md
@@ -23,7 +23,7 @@
 会話履歴を消すだけなので、カレントディレクトリも追加ディレクトリも維持され、
 このファイルは新しい文脈に再読み込みされる。起動後に追加したい場合は `/add-dir <パス>`。
 
-詳細は [glossary/07-claude-code.md](glossary/07-claude-code.md)。
+詳細は wiki の [CLAUDE.md の読まれ方](https://github.com/rindguitar/isce3-notes/wiki/Claude-Code-Setup)。
 
 ## プロジェクト概要
 
@@ -32,7 +32,7 @@
 | パス | 何か | ブランチ |
 |---|---|---|
 | `~/isce3` | ISCE3 本体（`isce-framework/isce3` の fork）。**成果物はここから出す PR** | `develop` |
-| `~/isce3-notes` | このリポジトリ。作業ログ・資料・用語集（private） | `main` |
+| `~/isce3-notes` | このリポジトリ。作業ログ・資料・設計判断。用語集は wiki | `main` |
 
 ISCE3 = NASA JPL の InSAR / SAR 処理ライブラリ。C++/CUDA のコア +
 Python バインディング。NISAR ミッションの処理基盤。
@@ -169,7 +169,9 @@ Python バインディング。NISAR ミッションの処理基盤。
 * `logs/` は `YYYY-MM-DD-<題名>.md`。**追記のみ。過去のログを後から修正しない**
   （そのとき何が起きたかを残すのが目的なので、後から正しくしない）
 * `reference/` は事実が変わったら**上書き更新**する
-* 新しい用語に出会ったら `glossary/` の該当ファイルに追記する
+* 新しい用語・概念に出会ったら **wiki の用語集**に追記する。
+  wiki は別リポジトリなので、`git clone https://github.com/rindguitar/isce3-notes.wiki.git`
+  してから編集し、push する
 * パスは `~/...` で書く。ユーザ名を含む絶対パスを書かない
 
 ## モデル運用ルール（コスト規律）
@@ -199,5 +201,5 @@ Python バインディング。NISAR ミッションの処理基盤。
 | `reference/environment.md` | 環境の再現手順・依存バージョン | 環境が壊れたとき |
 | `reference/build-options.md` | CMake / scikit-build のオプション | ビルド設定を変えるとき |
 | `reference/runtime-and-packaging.md` | 実行形態・Docker・spec file | 配布や再現性を考えるとき |
-| `glossary/*.md` | 技術・用語の解説 | 知らない用語に出会ったとき |
+| [wiki の用語集](https://github.com/rindguitar/isce3-notes/wiki) | 技術・用語の解説（42 ページ）。全体像は [ドキュメントマップ](https://github.com/rindguitar/isce3-notes/wiki/Documentation-Map) | 知らない用語に出会ったとき |
 | `logs/*.md` | 過去の作業ログ | 「前にどう解決したか」を探すとき |
