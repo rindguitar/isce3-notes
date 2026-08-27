@@ -83,6 +83,22 @@ ISCE3 の CONTRIBUTING.md はこれを推奨している。
 
 ## ブランチとプルリクエスト
 
+```mermaid
+flowchart TD
+    UPD["本家の develop<br/>upstream/develop"]
+    MYD["手元の develop<br/>直接コミット禁止"]
+    BR["作業ブランチ<br/>短命・マージ後に削除"]
+    FORK["fork に push<br/>origin"]
+    PR["プルリクエスト<br/>本家の develop 宛"]
+    REV["レビュー待ち<br/>コアメンバー 2 名の承認<br/>数か月かかる前提"]
+
+    UPD -->|"merge --ff-only"| MYD
+    MYD -->|"checkout -b"| BR
+    BR -->|"ローカルでテストしてから"| FORK
+    FORK --> PR
+    PR --> REV
+```
+
 ### ブランチを切る
 
 ```bash

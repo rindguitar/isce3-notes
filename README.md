@@ -20,11 +20,30 @@ CLAUDE.md    Claude Code 用のガイド。~/isce3 ではなくここに置い�
 isce3.code-workspace  VS Code 用。~/isce3-notes と ~/isce3 を1つのワークスペースにまとめる
 STATUS.md    現在地・次の一手・未解決事項。セッション終了時に必ず更新する
 decisions.md 設計判断の記録。何をなぜ選び、何を却下したか
+mermaid-guide.md  図を作るときの手順と原則。図を足したらこのファイルの一覧も更新する
 
 logs/        日付ごとの作業ログ。後から書き換えない（そのときの記録として残す）
 reference/   現時点の事実をまとめた資料。状況が変わったら上書き更新する
 glossary/    技術・用語の解説。「そもそもそれは何か」を置く
 ```
+
+### 3 つのパスの関係
+
+```mermaid
+flowchart LR
+    UP["本家<br/>isce-framework/isce3"]
+    SRC["ソース<br/>~/isce3<br/>本家の fork"]
+    BUILD["ビルド先<br/>~/isce3-build<br/>リポジトリの外"]
+    NOTES["このリポジトリ<br/>~/isce3-notes<br/>ログ・資料・用語集"]
+
+    UP -->|"fork してクローン"| SRC
+    SRC -->|"CMake でビルド"| BUILD
+    NOTES -.->|"観測して記録する"| SRC
+```
+
+`~/isce3` には**このリポジトリのファイルもビルド生成物も置かない**。
+記録はここ（`~/isce3-notes`）に、ビルドは `~/isce3-build` に分けてある。
+PR を出すまでの流れは [glossary/04-git.md](glossary/04-git.md) の図を参照。
 
 ### Claude Code の起動方法
 
@@ -55,6 +74,7 @@ glossary/    技術・用語の解説。「そもそもそれは何か」を置�
 - 内容が古くなった事実は `reference/` 側を直す。
 - 新しい用語に出会ったら `glossary/` の該当ファイルに追記する。
 - パスは `~/...` で書く。ユーザ名を含む絶対パスは書かない。
+- 図を追加・更新するときは [mermaid-guide.md](mermaid-guide.md) に従う。**PNG はコミットせず** ` ```mermaid ` フェンスで埋め込む。
 
 ## 現在の状態
 

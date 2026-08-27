@@ -1,5 +1,28 @@
 # 02. ビルドまわり — コンパイル / CMake / Ninja / pip
 
+## 全体の流れ
+
+```mermaid
+flowchart LR
+    ENV["conda 環境 isce3<br/>依存を揃える"]
+    SRC["ソース<br/>~/isce3"]
+    CONF["構成<br/>cmake -S -B"]
+    BUILD["ビルドツリー<br/>~/isce3-build"]
+    INST["インストール<br/>cmake --install"]
+    TEST["テスト<br/>ctest 基準 235/237"]
+    PY["Python から使う<br/>import isce3"]
+
+    SRC --> CONF
+    ENV --> CONF
+    CONF --> BUILD
+    BUILD --> TEST
+    BUILD --> INST
+    INST --> PY
+```
+
+`ctest` はビルドツリー（`~/isce3-build`）に対して走る。
+**`pip install .` だとビルドツリーが残らないのでテストできない**（→ `decisions.md`）。
+
 ## そもそもビルドとは
 
 **ソースコード（人間が読む文字列）を、実行できる形に変換する作業全体。**
