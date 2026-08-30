@@ -195,7 +195,7 @@ Mermaid は**宣言する順序でレイアウトが変わる。**
 | ビルドからテストまで | [ビルドの全体像](https://github.com/rindguitar/isce3-notes/wiki/Build-Overview) | ソースから `import isce3` までの流れ | 6 |
 | 貢献の流れ | [ブランチとプルリクエスト](https://github.com/rindguitar/isce3-notes/wiki/Pull-Request) | upstream 追従から PR・レビュー待ちまで | 5 |
 | 開発環境のジャンル相関 | [ドキュメントマップ](https://github.com/rindguitar/isce3-notes/wiki/Documentation-Map) | 環境 → ビルド → テスト → git の一本道 | 5 |
-| NISAR データの取得 | [NISAR Data Access](https://github.com/rindguitar/isce3-notes/wiki/NISAR-Data-Access) | Earthdata Login から受け取りまで | 4 |
+| NISAR データの取得 | [NISAR Data Access](https://github.com/rindguitar/isce3-notes/wiki/NISAR-Data-Access) | 認証の関門（アカウント→認可→トークン）と、検索は認証不要であること | 4 |
 | 処理レベルの連鎖 | [処理レベルの連鎖](https://github.com/rindguitar/isce3-notes/wiki/Processing-Chain) | 生データから各プロダクトへの流れと、担当するワークフロー | 4 |
 | 答え合わせの仕組み | [処理レベルの連鎖](https://github.com/rindguitar/isce3-notes/wiki/Processing-Chain) | 自分が作った出力と公式の出力を突き合わせてバグを見つける道筋 | 4 |
 
