@@ -400,3 +400,160 @@ wiki の[ジオコーディング](https://github.com/rindguitar/isce3-notes/wik
 | **分からない** | 偏波の共分散まわり（項が `VVVV` 1 つしかなく、交差項も対称化も出てこない） |
 | **分からない** | 周波数 A の経路（このシーンは B のみ） |
 | **分からない** | 起伏のある地形での挙動（南極の氷上で、しかも 80 m 間隔） |
+
+---
+
+# 追記 2: 公式 GCOV を再現し、バグを 1 件見つけた
+
+Step 1 のデータで「答え合わせ」まで通した。
+
+## 公式プロダクトが自分の作られ方を持っていた
+
+**これが決め手だった。** 推測で runconfig を組む必要がなかった。
+
+```
+/science/LSAR/GCOV/metadata/processingInformation/parameters/runConfigurationContents
+```
+
+ここに**公式の runconfig 全文（5912 文字）がそのまま入っていた。**
+同じ `processingInformation` の下に、使った入力も記録されている。
+
+| 記録されていたもの | 値 |
+|---|---|
+| 入力 RSLC | **私が落としたものと完全一致** |
+| DEM | NISAR DEM v1.2（Copernicus 30-m 2023_1 由来）、EPSG:3031 |
+| 軌道 | `NISAR_ANC_J_PR_MOE_...xml` |
+| TEC | `NISAR_ANC_TEC_20260825T211750_...json` |
+| ISCE3 のバージョン | **0.25.16** |
+| 出力 geogrid | EPSG:3031、80 m、`top_left (-1536480, 974880)` / `bottom_right (-1141920, 581040)` |
+| 地形補正 | 適用（beta0 → gamma0、下限 −30 dB、DEM を 2 倍補間） |
+| 偏波の対称化 | 無効 |
+
+**TEC は公式が使ったのと同じ granule が ASF から取れた。** 電離層補正まで再現できる。
+
+## 揃えたもの
+
+| | 内容 | 量 |
+|---|---|---|
+| DEM | `NISAR_DEM` の EPSG:3031 タイル 9 枚 → `gdalbuildvrt` で VRT に | 725 MB |
+| TEC | 公式と同一の granule | 6.2 MB |
+| 軌道 | **落とさなかった。** RSLC 内蔵の軌道を使った | — |
+| runconfig | 公式から書き写し。geogrid は 1 の位まで同じ | — |
+
+DEM は 20 m 間隔、EPSG:3031。**シーンの実範囲は覆えたが、geogrid の空の隅までは
+覆えていない。**それでも問題は起きなかった（データが無い領域なので）。
+
+## 実行
+
+```bash
+python -m nisar.workflows.gcov gcov_step1.yaml
+```
+
+| | |
+|---|---|
+| 実行時間 | **100 秒** |
+| CPU | 432%（8 コア中およそ 4.3 コア） |
+| 最大メモリ | **3.9 GB**（15 GB 中） |
+| 出力 | `my_gcov.h5` **322,961,408 バイト** |
+
+**公式 GCOV も 322,961,408 バイト。1 バイト単位で同じだった。**
+
+## 比較の結果
+
+| 検査 | 結果 |
+|---|---|
+| 格子（x / y 座標） | **完全一致** |
+| 投影 | 両方 EPSG:3031 |
+| 有効画素マスク | **100.0000% 一致**（1,224,572 画素、食い違い 0） |
+| `VVVV` の絶対差 | 中央値 **0**、最大 7.63e-06 |
+| `VVVV` の相対差 | 中央値 **0**、最大 1.46e-05。全画素が 1e-06 未満 |
+| dB 差 | 中央値 **±0.0000**、標準偏差 0.0000 |
+| crosstalk レイヤ | 完全一致 |
+
+残差の最大 1.46e-05 は、公式設定の `mantissa_nbits: 16` による量子化幅
+**2⁻¹⁶ = 1.53e-05** の中に収まっている。つまり**保存精度より細かいところまで一致**しており、
+計算そのものは実質同一。
+
+### 何が言えて、何が言えないか
+
+| | |
+|---|---|
+| **言える** | 環境とビルドが正しい |
+| **言える** | ISCE3 0.25.16 → 0.26.0-dev でこのケースは回帰していない |
+| **言える** | 取得から比較までの手順が確立した |
+| **言えない** | 地形補正が正しいこと（このシーンは平坦な棚氷） |
+| **言えない** | 偏波の共分散が正しいこと（項が `VVVV` 1 つだけ） |
+| **言えない** | 周波数 A の経路が正しいこと（このシーンは B のみ） |
+
+**Step 2（起伏のある地形・2 偏波）が必要な理由が、ここではっきりした。**
+
+## 見つけたバグ
+
+処理中に GDAL のエラーが 1 行出た。**終了コードは 0** で、処理はそのまま完了する。
+
+```
+ERROR 5: tmp7acypfvt.vrt, band 1: Access window out of range in RasterIO().
+Requested (0,0) of size 105x31 on raster of 31x1.
+In isce3::io::Raster::get/setValue() - error in RasterIO.
+```
+
+追いかけた結果、**`referenceTerrainHeight` のジオコーディングが失敗し、
+レイヤ全体が NaN になっていた。**
+
+| 場所 | 形状 | 中身 |
+|---|---|---|
+| 入力 RSLC | `(31,)` | 全て 0.0（有効値） |
+| 出力 GCOV | `(395, 396)` | **全て NaN** |
+
+**公式プロダクトも同じ状態だった。**
+
+### 原因
+
+`python/packages/nisar/products/writers/BaseL2WriterSingleInput.py:1914`
+
+```python
+# The `referenceTerrainHeight` LUT can be either a 1-D LUT (along
+# azimuth) or a 2-D LUT. So, to determine the type of the LUT to
+# geocode, check the constant `LUT_1D_AZ_DATASETS`, but also verify if
+# `slantRange` is present within the LUT group to confirm its dimensions.
+slant_range_path = f'{input_h5_group_path}/slantRange'
+flag_luts_are_1d_az = (all([var in LUT_1D_AZ_DATASETS
+                           for var in input_ds_name_list]) and
+                       slant_range_path not in self.input_hdf5_obj)
+```
+
+次元の判定に、**同じグループに `slantRange` があるかどうか**を使っている。
+ところが実データではそのグループに両方が入っている。
+
+```
+.../processingInformation/parameters/referenceTerrainHeight  (31,)    ← 1 次元
+.../processingInformation/parameters/slantRange              (105,)   ← 別 LUT 用の軸
+```
+
+`slantRange` があるので「2 次元だ」と判定され、1 次元配列を 2 次元ラスタとして
+開こうとして失敗する。105×31 を要求して 31×1 しかない、というエラーがまさにこれ。
+
+**兄弟データセットの有無で次元を判定しているのが誤り。**
+データセット自身の次元を見るべきところ。
+
+### 既知の issue との違い
+
+upstream に **#165（open）** 「`referenceTerrainHeight` が RSLC でゼロ埋めのベクトルとして
+格納されている」がある。**これとは別物。**
+
+| | 場所 | 形状 | 症状 | 原因 |
+|---|---|---|---|---|
+| #165 | `metadata/sourceData/.../referenceTerrainHeight` | `(31,)` | 全てゼロ | RSLC 側の値が空 |
+| 今回 | `metadata/processingInformation/.../referenceTerrainHeight` | `(395,396)` | **全て NaN** | 次元判定の誤り |
+
+**#165 を直しても、こちらの NaN は直らない。**
+仮に RSLC に正しい標高が入っても、ジオコーディングで落ちるので NaN のままになる。
+
+### まだ確かめていないこと
+
+- **修正案を試していない。** `var_h5_dataset.ndim` で判定すれば直ると考えているが、
+  パッチを当てて検証していない
+- **GSLC も同じか未確認。** 同じ基底クラス `BaseL2WriterSingleInput` を使うので
+  影響する可能性が高いが、実行していない
+- 他の 1 次元 LUT（crosstalk 系）は正常だった。あれは `LUT_1D_RG_DATASETS` の
+  経路を通り、判定に `slantRange` を使っていない
