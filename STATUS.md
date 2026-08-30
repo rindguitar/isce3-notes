@@ -4,15 +4,10 @@
 
 ## 現在のフェーズ
 
-**実データ取得 → 公式プロダクト再現 → バグ 1 件を検証完了 → 🔴 再ビルド待ち。**
+**実データ取得 → 公式プロダクト再現 → バグ 1 件を検証完了 → 次は issue 起票。**
 
-⚠️ **`~/isce3-build` がソースと不整合。** 2026-08-30 に upstream へ追従して C++ が変わった。
-**次のセッションはまず再ビルドから。**
-
-```bash
-cmake --build ~/isce3-build -j8 && cmake --install ~/isce3-build
-ctest --test-dir ~/isce3-build --output-on-failure
-```
+✅ **再ビルド済み。ビルドとソースは一致している**（2026-08-30）。
+🔴 **ctest の基準値が 236/237 に変わった**（`geometry.geometry` が通るようになった）。
 
 **2026-08-30: 公式 GCOV の再現に成功し、その過程でバグを 1 件見つけた。**
 有効画素マスクが 100.0000% 一致、値の差は保存精度未満。環境が正しいことの証明になった。
@@ -22,6 +17,14 @@ ctest --test-dir ~/isce3-build --output-on-failure
 **issue にある問題の対処と、バグを発見して issue を立てるのがメイン。**
 
 ## 前回やったこと
+
+2026-08-30（4 本目）: **再ビルドし、基準値を 236/237 に更新した。**
+
+- upstream 追従後のフルビルド + ctest 全実行（655 秒）。**236/237 合格**
+- ✅ **`geometry.geometry` が通った。** 未初期化変数（`double aztime, slantRange;`）が
+  原因だったことが確定。**「UB の疑い」という推測は正しかった**。UBSan 調査は不要になった
+- 残る既知の失敗は `nisar.workflows.stage_dem` の 1 件のみ（upstream のバグ・環境と無関係）
+- ⚠️ **`CLAUDE.md` の基準値も 236/237 に書き換えた。**以後は **2 件以上落ちたら自分の変更を疑う**
 
 2026-08-30（3 本目）: **バグの検証を詰め、upstream に追従した。**
 
@@ -103,11 +106,6 @@ ctest --test-dir ~/isce3-build --output-on-failure
 
 **5 が主線になった**（具体的なバグが手元にあるため）。
 
-0. 🔴 **再ビルドと ctest**（他の何より先）
-   - upstream 追従で C++ が変わった。ビルドが古い
-   - **`geometry.geometry` が通る可能性がある**（未初期化変数が修正されたため）。
-     通れば基準値は 235/237 → 236/237 に変わる。**確認するまで基準値を書き換えない**
-   - ビルドとテストは**ユーザーが実行する**
 1. 🔴 **`referenceTerrainHeight` のジオコーディング失敗を issue にする**
    - **検証は完了。**再現手順・原因・修正案・副作用なし・upstream 最新にも存在、まで確認済み
    - 材料: 同梱 `envisat.h5` で再現、既存テストがエラー 4 回で合格、`tests/` に検証 0 件、
@@ -117,7 +115,7 @@ ctest --test-dir ~/isce3-build --output-on-failure
 2. **#255 `DateTime` の TZ 指定子未対応**
    - 再現済み・未着手・修正範囲が 1 関数（`cxx/isce3/core/DateTime.cpp` の 413 行目付近）
 3. **numpy 2.x でのバグ探し**
-   - numpy 2.x の conda 環境を別に作り、再ビルド → ctest → 基準値 235/237 と比較
+   - numpy 2.x の conda 環境を別に作り、再ビルド → ctest → 基準値 236/237 と比較
    - ビルドとテストは**ユーザーが実行する**
 4. **#199 GDAL 3.12 の `SetGeoTransform` API 変更への追従**
    - 手元は GDAL 3.13.3 なので検証可能
@@ -137,8 +135,6 @@ ctest --test-dir ~/isce3-build --output-on-failure
 
 ### 任意（急がない）
 
-- `GeoToRdr` の未解決 failure を追うなら、UBSan (`-fsanitize=undefined`) 付きの
-  最適化ビルドで UB の場所を特定する
 - 信号処理側（`focus` / `signal`）にはまだ一度も触れていない
 
 ## upstream の実態（2026-08-27 時点）
@@ -152,14 +148,10 @@ ctest --test-dir ~/isce3-build --output-on-failure
 
 ## 未解決・保留中の問題
 
-- ✅ **`GeometryTest.GeoToRdr` は upstream で修正された**（2026-08-24、手元も追従済み）。
-  `double aztime, slantRange;` が未初期化のまま `geo2rdr` の初期値に渡っていた。
-  **「UB の疑い」という推測が当たっていた。** ただし**再ビルドするまで未確認**。
-  以下は修正前の調査記録:
-  詳細は `logs/2026-08-23-test-failures.md`
-  - 2026-08-27 追記: Python 経由の `geo2rdr` は**正常系が高精度で通った**。
-    C++ 側のテストなので反証にはならないが、追うなら
-    **失敗する特定の入力条件の絞り込み**が次の一歩（`tests/cxx/` を読めばよい）
+- ✅ **解決済み: `GeometryTest.GeoToRdr`**（upstream が 2026-08-24 に修正、
+  2026-08-30 の再ビルドで**合格を確認**）。`double aztime, slantRange;` が未初期化のまま
+  `geo2rdr` の初期値に渡っていた。**「UB の疑い」という推測が当たっていた。**
+  調査の経緯は `logs/2026-08-23-test-failures.md`
 - `nisar.workflows.stage_dem` は upstream のバグ。**環境と無関係なので対処不要**
 - `io.background` は flaky。落ちても再実行で判断する
 - 🔴 **`referenceTerrainHeight` のジオコーディングが全 NaN になる**（2026-08-30 発見）。
@@ -174,7 +166,7 @@ ctest --test-dir ~/isce3-build --output-on-failure
 |---|---|---|
 | GDAL | 3.13.3 | #199 で問題になった 3.12 より新しい |
 | HDF5 / h5py | 2.2.0 / 3.16.0 | #223 報告時（2.0.0 / 3.15.1）より新しい |
-| GCC | 15.3.0 | 非常に新しい。`GeoToRdr` 失敗もこれ起因の可能性 |
+| GCC | 15.3.0 | 非常に新しい。`GeoToRdr` 失敗の原因ではなかった（未初期化変数だった） |
 | numpy | 1.26.4 | **古い。NEP 50 系のバグが見えない** → 2.x 環境を作る価値がある |
 
 ## 使うときに引っかかる ISCE3 の仕様（確認済み）
