@@ -557,3 +557,158 @@ upstream に **#165（open）** 「`referenceTerrainHeight` が RSLC でゼロ�
   影響する可能性が高いが、実行していない
 - 他の 1 次元 LUT（crosstalk 系）は正常だった。あれは `LUT_1D_RG_DATASETS` の
   経路を通り、判定に `slantRange` を使っていない
+
+---
+
+# 追記 3: 検証を詰め、upstream に追従した
+
+「1 例で起票するのは早い」という指摘を受けて、再現性・修正案・別条件での確認を先に行った。
+
+## 再現性: 同梱テストデータで再現する
+
+**NISAR のデータを落とさなくても再現する。** これが分かったのが大きい。
+
+発動条件（`referenceTerrainHeight` と `slantRange` の同居）と結果が、3 つのデータで対応した。
+
+| データ | `referenceTerrainHeight` | `slantRange` | 出力 |
+|---|---|---|---|
+| `winnipeg.h5` | **無し** | あり | データセット自体が出ない |
+| `envisat.h5`（同梱） | `(80,)` 全て 0.0 | `(240,)` 同居 | **`(10,41)` 全て NaN** |
+| 実データ Step 1 | `(31,)` 全て 0.0 | `(105,)` 同居 | **`(395,396)` 全て NaN** |
+
+そして**既存テストはこのエラーを 4 回出しながら合格する。**
+
+```
+ERROR 5: ... Access window out of range in RasterIO().   ← 4 回
+PASSED test_run_winnipeg
+PASSED test_run_envisat
+2 passed
+```
+
+## Step 2 でも同じだった（条件はほぼ全て違う）
+
+| | Step 1 | Step 2 |
+|---|---|---|
+| 周波数 | B のみ | **A と B** |
+| 偏波 | `VV` 単偏波 | **`HH` + `HV`** |
+| 帯域 | 5 MHz | **20 MHz + 5 MHz** |
+| 投影 | EPSG:3031（極立体） | **EPSG:32759（UTM 59S）** |
+| 画素間隔 | 80 m | **20 m** |
+| 地形 | 平坦な棚氷 | **急峻なサザンアルプス** |
+| `referenceTerrainHeight` | 全て NaN | **全て NaN** |
+
+**モード・投影・偏波・地形のいずれにも依存しない構造的なバグ。**
+
+## 修正案を検証した
+
+判定を「兄弟に `slantRange` があるか」から「そのデータセット自身が 1 次元か」に変更。
+
+```python
+flag_luts_are_1d_az = (all([var in LUT_1D_AZ_DATASETS for var in input_ds_name_list]) and
+                       all([f'{input_h5_group_path}/{var}' in self.input_hdf5_obj and
+                            self.input_hdf5_obj[f'{input_h5_group_path}/{var}'].ndim == 1
+                            for var in input_ds_name_list]))
+```
+
+**`~/isce3` は書き換えず、`~/isce3-build/install/` の複製に当てて検証し、後で復元した。**
+
+| | 修正前 | 修正後 |
+|---|---|---|
+| GCOV テストの `Access window` エラー | 4 回 | **0 回** |
+| GSLC テストの同エラー | あり | **0 回** |
+| `referenceTerrainHeight`（envisat） | 全て NaN | **134/410 が有効** |
+| `referenceTerrainHeight`（実データ） | 全て NaN | **31,228/156,420 が有効** |
+| テストの合否 | 合格 | **合格**（変わらず） |
+| **科学データ `VVVV`** | — | **ビット単位で完全一致（副作用なし）** |
+
+## なぜこの判定になっていたか
+
+導入コミットのメッセージに理由が書いてあった。
+
+```
+commit 07a033f4  Gustavo H Shiroma  2025-05-15
+Update GCOV & GSLC writer to geocode 1-D LUTs (#2137)
+
+  * add geocoding of 1-D LUTs to BaseL2WriterSingleInput
+  * handle case in which `referenceTerrainHeight` is a 2-D LUT
+  * simplify code
+```
+
+**`referenceTerrainHeight` は 1 次元のことも 2 次元のこともある**ので判別子が要り、
+「同じグループに `slantRange` があれば 2 次元だろう」と考えたもの。
+その推論が実データで成り立たなかった。
+
+`(#2137)` は upstream の番号ではない（upstream は現在 #366 前後）。**JPL 内部リポジトリの番号**なので議論は追えない。
+
+## なぜ見逃されたか
+
+```
+tests/ 配下での referenceTerrainHeight の出現回数: 0
+```
+
+**検証しているテストが 1 つも無い。**
+
+対照的に、同じ PR で追加された**もう一方の 1 次元経路（レンジ方向・crosstalk）にはテストがある**
+（`tests/python/packages/nisar/workflows/gcov.py:140-146` で値域を検査）。
+
+> **テストがある方は動き、テストが無い方は壊れている。**
+
+## 途中で出た 4 件のテスト失敗は、私の誤り
+
+`crossmul` / `geocode_insar` / `resample_slc` / `resample_slc_v2` が落ちたが、
+**ctest をサブセット実行して前提テストを飛ばしたのが原因。** 回帰ではない。
+
+```cmake
+set_tests_properties(...resample_slc  PROPERTIES DEPENDS ...geo2rdr)
+set_tests_properties(...crossmul      PROPERTIES DEPENDS "...resample_slc;...resample_slc_v2")
+set_tests_properties(...geocode_insar PROPERTIES DEPENDS "...rdr2geo;...unwrap")
+```
+
+**ctest の `DEPENDS` は順序を決めるだけで、前提テストを自動実行しない。**
+`-R` で絞るときは依存元も含めないと落ちる。
+
+## upstream に追従した
+
+**それまで `git fetch upstream` を一度もしていなかった。** 追従した結果:
+
+```
+0d1600d8b (2026-08-17) → 23f99329d (2026-08-24)   2 コミット
+```
+
+### バグは upstream の最新にも存在する
+
+該当ファイルは手元と upstream/develop で**差分なし**。1914〜1917 行が同じまま。
+**起票する価値がある。**
+
+### 🔴 取り込んだ 2 コミットが、未解決だった `GeoToRdr` の失敗を修正していた
+
+```cpp
+// tests/cxx/isce3/geometry/geometry/geometry.cpp
+-    double aztime, slantRange;
++    // aztime is used as the initial azimuth time guess, so it must be
++    // initialized to a value within the orbit's time span rather than left
++    // undefined.  It also needs to fall within the domain of the Doppler
++    // LUT2d, or the LUT2d must be configured to allow extrapolation.
++    // In this case, orbit.midTime() satisfies both constraints.
++    double aztime = orbit.midTime(), slantRange = 0.0;
+```
+
+**変数が未初期化のまま、反復解法の初期値として使われていた。**
+
+`STATUS.md` に「`-O0` で通り `-O2` で落ちる。`-ffp-contract=off` でも落ちるので
+FMA は無関係 → **UB の疑い**」と書いていた推測が、**当たっていた**ことになる。
+
+`cxx/isce3/geometry/TopoLayers.cpp` の方も、要求されなかったレイヤの空 `valarray` に
+`&valarray[0]` していた範囲外アクセスの修正。**2 件とも UB の修正だった。**
+
+### ⚠️ ビルドが古くなった
+
+C++ が変わったので、**`~/isce3-build` は現在ソースと不整合。**
+
+```bash
+cmake --build ~/isce3-build -j8 && cmake --install ~/isce3-build
+ctest --test-dir ~/isce3-build --output-on-failure
+```
+
+再ビルド後、**基準値が 235/237 から変わる可能性がある**（`geometry.geometry` が通るかもしれない）。
+確認するまでは基準値を更新しない。
