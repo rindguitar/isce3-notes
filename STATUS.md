@@ -28,6 +28,10 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 
 - **新しい issue / PR は立っていない。**`referenceTerrainHeight` 関連は依然 #165 のみ
   （最終更新 2026-06-17）。該当ファイルの upstream 最新コミットも `530f0c6ee`（2026-04-13）のまま
+- **closed 側も確認した。**closed issue は **29 件しかない**ので全タイトルを目視。該当なし
+  （近そうな #33「RIFG のジオコーディング失敗」と #187「`LUT2d.eval` のクラッシュ」は中身を開いて別件と確認）。
+  `geocode_lut` / `LUT_1D` は検索 0 件、`BaseL2WriterSingleInput` は 5 件で
+  **未マージのまま閉じられた修正案は無い**。GitHub の issue 検索はコメント本文も対象
 - 2026-08-30 以降に動きがあったのは 5 件（#370 / #346 / #375 / #371 / #372）。**いずれも無関係**
   - ⚠️ ただし **open PR #370 と #371 は `writers/SLC.py` を触る**。
     差分を確認したところ `require_lut_axes` / `referenceTerrainHeight` の箇所には触れていない
