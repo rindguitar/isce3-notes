@@ -157,3 +157,8 @@ I am not sure whether keying on `.ndim` is the right long-term choice given the 
 to move to a 2-D LUT, so I am reporting the problem rather than proposing a patch.
 Happy to open a PR if this direction looks reasonable, and to add a regression test
 that asserts the geocoded layer contains valid values.
+
+If this is already known and accepted for the time being — for instance because the
+values are currently placeholder zeros (#165) and the LUT is expected to become 2-D
+anyway — please say so and feel free to close this. I could not find any public
+record of it, which is the main reason I am writing it up.
