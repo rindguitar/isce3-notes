@@ -1,6 +1,6 @@
 # STATUS
 
-最終更新: 2026-09-04（セッション終了時に必ず更新）
+最終更新: 2026-09-06（作業が一区切りしたら必ず更新）
 
 ## 現在のフェーズ
 
@@ -23,6 +23,22 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 上流は PR の滞留が激しいため、**マージまで数か月かかる前提で出す**（急がない）。
 
 ## 前回やったこと
+
+2026-09-06: **テンプレート更新に伴いリポジトリを再編した。**
+
+- 配置変更（**最小変更**を選択。判断は `docs/decisions.md`）
+  - `STATUS.md` → **`docs/STATUS.md`**、`decisions.md` → **`docs/decisions.md`**
+  - `mermaid-guide.md` → **`.claude/rules/mermaid.md`**（`paths` frontmatter 付き）
+  - `reference/` `logs/` `drafts/` は**ルートのまま**
+- `.claude/rules/` を新設（`mermaid.md` / `readme.md` / `wiki.md`）。
+  該当ファイルを触るときだけ自動ロードされる
+- `CLAUDE.md` をテンプレートの節構成に合わせて書き直し、
+  **ドキュメント規約**と**セキュリティ**の節を新設。`@docs/STATUS.md` に変更
+- ⚠️ **`main` 直接コミットはこのリポジトリでは維持**（テンプレートの禁止規定は不適用）。
+  `~/isce3` の `develop` 直接コミット禁止は従来どおり
+- コミットメッセージに接頭辞を導入: `feat:` / `fix:` / `docs:` / `refactor:`
+- `drafts/README.md` を新規作成、`logs/README.md` に 2026-08-30 のログを追加
+- ルート `README.md` の「現在の状態」が **235/237 のまま古かったので修正**（→ 236/237）
 
 2026-09-04: **環境要因を 3 通りで潰し、#165 用のコメントと証拠をまとめた。**
 
@@ -155,7 +171,7 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 - ⚠️ **wiki は別リポジトリなので、セッションから直接は読み書きできない。**
   用語集に追記するには `git clone https://github.com/rindguitar/isce3-notes.wiki.git` が要る
 - NISAR の実データ取得手順を wiki に起こした（https://github.com/rindguitar/isce3-notes/wiki/NISAR-Data-Access）。**未検証**
-- 図を 8 枚作成（本体 1 枚 / wiki 7 枚）。`mermaid-guide.md` をこのリポジトリ用に書き直した
+- 図を 8 枚作成（本体 1 枚 / wiki 7 枚）。`mermaid-guide.md`（現 `.claude/rules/mermaid.md`）をこのリポジトリ用に書き直した
 
 2026-08-23: 環境構築。**ctest の基準値 235/237 を確定。** `~/isce3-notes` を整備。
 
@@ -266,4 +282,4 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 - 2026-08-23: メモは fork の wiki ではなく**独立したリポジトリ**（公開。wiki を使うため）
 - 2026-08-23: `CLAUDE.md` は `~/isce3-notes` に置き、`--add-dir ~/isce3` で運用する
 
-詳細は `decisions.md`
+詳細は `docs/decisions.md`

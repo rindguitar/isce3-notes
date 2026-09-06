@@ -18,12 +18,19 @@ ISCE3 は NASA JPL の InSAR / SAR 処理ライブラリ（C++ / CUDA コア + P
 ```
 CLAUDE.md    Claude Code 用のガイド。~/isce3 ではなくここに置いている
 isce3.code-workspace  VS Code 用。~/isce3-notes と ~/isce3 を1つのワークスペースにまとめる
-STATUS.md    現在地・次の一手・未解決事項。セッション終了時に必ず更新する
-decisions.md 設計判断の記録。何をなぜ選び、何を却下したか
-mermaid-guide.md  図を作るときの手順と原則。図を足したらこのファイルの一覧も更新する
+
+docs/
+  STATUS.md      現在地・次の一手・未解決事項。作業が一区切りしたら必ず更新する
+  decisions.md   設計判断の記録。何をなぜ選び、何を却下したか
+
+.claude/rules/   Claude Code が該当ファイルを触るときだけ読む詳細規約
+  mermaid.md     図を作るときの手順と原則
+  readme.md      各 README に何を書くか
+  wiki.md        wiki の構成規約（wiki は別リポジトリ）
 
 logs/        日付ごとの作業ログ。後から書き換えない（そのときの記録として残す）
 reference/   現時点の事実をまとめた資料。状況が変わったら上書き更新する
+drafts/      upstream へ提出する前の下書きと、その根拠
 ```
 
 **用語集（そもそもそれは何か）は wiki にある** → https://github.com/rindguitar/isce3-notes/wiki
@@ -58,7 +65,7 @@ PR を出すまでの流れは [ブランチとプルリクエスト](https://gi
 だから**このリポジトリを起点にする**。**`~/isce3` には何も置かない。**
 
 `/clear` では何もし直さなくてよい（作業ディレクトリも追加ディレクトリも維持される）。
-ただし会話の記憶は消えるので、**`/clear` の前に `STATUS.md` を更新する**。
+ただし会話の記憶は消えるので、**`/clear` の前に `docs/STATUS.md` を更新する**。
 
 仕組みの詳細は wiki の [CLAUDE.md の読まれ方](https://github.com/rindguitar/isce3-notes/wiki/Claude-Code-Setup)。
 
@@ -66,6 +73,7 @@ PR を出すまでの流れは [ブランチとプルリクエスト](https://gi
 
 - [logs/README.md](logs/README.md) — 作業ログの一覧
 - [reference/README.md](reference/README.md) — 資料の一覧
+- [drafts/README.md](drafts/README.md) — 提出前の下書きと、その状態
 
 用語集は wiki にある。
 
@@ -81,15 +89,20 @@ PR を出すまでの流れは [ブランチとプルリクエスト](https://gi
   wiki は本体とは別の git リポジトリなので、編集するには clone が要る。
   `git clone https://github.com/rindguitar/isce3-notes.wiki.git`
 - パスは `~/...` で書く。ユーザ名を含む絶対パスは書かない。
-- 図を追加・更新するときは [mermaid-guide.md](mermaid-guide.md) に従う。**PNG はコミットせず** ` ```mermaid ` フェンスで埋め込む。
+- 図を追加・更新するときは [.claude/rules/mermaid.md](.claude/rules/mermaid.md) に従う。**PNG はコミットせず** ` ```mermaid ` フェンスで埋め込む。
+- 各ディレクトリに `README.md` を置き、**中身を変えたのと同じコミットで索引も更新する**。
+- コミットメッセージには `feat:` / `fix:` / `docs:` / `refactor:` の接頭辞を付ける。
 
 ## 現在の状態
 
 - ISCE3 `0.26.0-dev` を **CPU ビルド**でインストール済み（CMake 直叩き / `~/isce3-build`）
-- `ctest` の基準値は **235/237**（608 秒）
-- 落ちる 2 件は既知: `GeoToRdr`（最適化起因、未解決）、`stage_dem`（upstream バグ、対処不要）
-  → **3 件以上落ちたら自分の変更を疑う**
+- `ctest` の基準値は **236/237**（655 秒）
+- 落ちるのは `stage_dem` の 1 件のみ（upstream バグ、環境と無関係）
+  → **2 件以上落ちたら自分の変更を疑う**
+- `GeoToRdr` は upstream の修正（未初期化変数）で**解決済み**
 - GPU (CUDA) ビルドは未対応
+- **NISAR の実データを取得済み**（`~/nisar-data/`。リポジトリには入れない）。
+  公式 GCOV の再現に成功し、その過程で upstream のバグを 1 件発見した
 
 再現手順は [reference/environment.md](reference/environment.md)、
 残課題は各ログの末尾を参照。

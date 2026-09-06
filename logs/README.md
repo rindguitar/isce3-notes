@@ -12,6 +12,7 @@
 
 | 日付 | ログ | 内容 |
 |---|---|---|
+| 2026-08-30 | [実データの初取得と公式プロダクト再現](2026-08-30-first-real-data.md) | NISAR の実データ（RSLC + GCOV）を初取得し、公式 GCOV の再現に成功（有効画素マスク 100.0000% 一致）。その過程で **`referenceTerrainHeight` が全 NaN になるバグを発見**し、検証・修正案・upstream 追従までを記録 |
 | 2026-08-27 | [upstream の issue 調査](2026-08-27-upstream-issues.md) | open 97 件を分類。**PR は作者を問わず数か月〜1 年以上滞留**しており、issue 起票のほうが費用対効果が高いと判断。#255（DateTime が TZ 指定子を受け付けない）を手元で再現。#223 / #335 は解決済み、#265 と #353 は重複 |
 | 2026-08-27 | [初めて動かした（幾何 API の試運転）](2026-08-27-first-run.md) | `core` / `geometry` を外から叩き、楕円体・軌道補間・rdr2geo / geo2rdr を実測。`Orbit` が参照エポックを付け替えること、地上間隔は近距離ほど広いことが判明 |
 | 2026-08-23 | [記録の置き場所と Claude Code 設定](2026-08-23-notes-repo-setup.md) | このリポジトリの構造を決め、`CLAUDE.md` / `STATUS.md` / `decisions.md` と用語集を整備。`CLAUDE.md` の探索規則、`/clear` の挙動、拡張機能版との違いが判明 |
