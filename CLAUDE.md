@@ -81,10 +81,11 @@ ISCE3 = NASA JPL の InSAR / SAR 処理ライブラリ。C++/CUDA のコア + Py
 
 1. `docs/STATUS.md` を更新する（何をした / 何が残った / 次に何をすべきか / 詰まった点）
 2. 設計判断があれば `docs/decisions.md` に追記する
-3. 触ったディレクトリの `README.md` を更新する（`logs/` `reference/` `drafts/`）
-4. 新しい用語・概念が出たら **wiki の用語集**に追記する
-5. `git -C ~/isce3 status --short` で **`~/isce3` が汚れていないこと**を確認する
-6. コミット・プッシュ漏れがないか確認する
+3. **実測で確定した知見**があれば `docs/experiments.md` に追記する（推測は書かない）
+4. 触ったディレクトリの `README.md` を更新する（`logs/` `reference/` `drafts/`）
+5. 新しい用語・概念が出たら **wiki の用語集**に追記する
+6. `git -C ~/isce3 status --short` で **`~/isce3` が汚れていないこと**を確認する
+7. コミット・プッシュ漏れがないか確認する
 
 ## ドキュメント規約
 
@@ -235,6 +236,7 @@ ISCE3 = NASA JPL の InSAR / SAR 処理ライブラリ。C++/CUDA のコア + Py
 |---|---|---|
 | `docs/STATUS.md` | 現在地・次の一手 | **毎セッション開始時（@import 済み）** |
 | `docs/decisions.md` | 設計判断の記録 | 過去の判断を確認するとき |
+| `docs/experiments.md` | 実験結果・**検証済みの知見** | 「これは確かめた事実か」を確認するとき |
 | `.claude/rules/mermaid.md` | 作図の原則と手順 | 図を作る・直すとき（自動ロード） |
 | `.claude/rules/readme.md` | README の書き方 | README を触るとき（自動ロード） |
 | `.claude/rules/wiki.md` | wiki の構成規約 | 用語集を書くとき |

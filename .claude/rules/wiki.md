@@ -29,6 +29,7 @@ git clone https://github.com/rindguitar/isce3-notes.wiki.git /tmp/wiki
 | GitHub Wiki | **用語集**。技術・概念の解説（「そもそも InSAR とは」「GCOV とは」） |
 | `README.md`（各ディレクトリ） | そのディレクトリの構成・一覧・使い方 |
 | `docs/decisions.md` | 設計判断の記録（なぜそれを選んだか） |
+| `docs/experiments.md` | 実測で確定した知見（何が言えるか） |
 | `docs/STATUS.md` | 現在地・次の一手 |
 | `logs/` | その日に何が起きたかの記録（追記のみ） |
 | `reference/` | 現時点の事実（環境・ビルド設定など。上書き更新） |

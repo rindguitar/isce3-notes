@@ -242,26 +242,10 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 | GCC | 15.3.0 | 非常に新しい。`GeoToRdr` 失敗の原因ではなかった（未初期化変数だった） |
 | numpy | 1.26.4 | **古い。NEP 50 系のバグが見えない** → 2.x 環境を作る価値がある |
 
-## 使うときに引っかかる ISCE3 の仕様（確認済み）
+## 確認済みの知見
 
-- **時刻は `orbit.reference_epoch` からの経過秒数。** `Orbit` は
-  コンストラクタで基準を先頭の状態ベクトル時刻に付け替える
-- **LLH の順番は「経度・緯度・高度」で、角度はラジアン。** 緯度経度ではない
-- **`DateTime` は TZ 指定子を受け付けない**（`Z` も `+00:00` も不可）。これが #255
-- rdr2geo / geo2rdr は反復解法。解がなければ
-  `RuntimeError: rdr2geo failed to converge` を投げる（黙って誤答は返さない）
-- **granule 名の `PR` は「PROVISIONAL」ではなく処理種別**（nominal 生産）。
-  成熟度は CRID の頭文字で分かる（BETA が `X`、PROVISIONAL が `P`）
-- **GCOV は ISCE3 の出力であって入力ではない。** 動かすなら RSLC が要る
-  （runconfig に `REQUIRED - One NISAR L1 RSLC formatted HDF5 file`）
-- **実データの軌道は状態ベクトルが 11 点だけ**（10 秒間隔・100 秒分）。
-  エルミート補間が前提なので、これで足りる
-- **`polsar` は偏波処理一般ではない。** `symmetrize.h` 1 本で対称化のみ
-- **公式プロダクトは自分を作った runconfig 全文を持っている。**
-  `metadata/processingInformation/parameters/runConfigurationContents`。
-  入力・DEM・TEC・軌道・ISCE3 のバージョンも記録されている
-- **公式 GCOV は `mantissa_nbits: 16` で非可逆圧縮されている。** 比較時は設定を揃える
-- runconfig の `processing.geocode.top_left` / `bottom_right` で**出力範囲を絞れる**
+**`docs/experiments.md` に移した。** 実測して確定した事実（ISCE3 の仕様・幾何 API の挙動・
+公式プロダクト再現の数値・`referenceTerrainHeight` の検証結果・反証された推定）はそちらを見る。
 
 ## 直近の決定事項
 

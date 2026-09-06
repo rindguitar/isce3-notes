@@ -22,6 +22,7 @@ isce3.code-workspace  VS Code 用。~/isce3-notes と ~/isce3 を1つのワー�
 docs/
   STATUS.md      現在地・次の一手・未解決事項。作業が一区切りしたら必ず更新する
   decisions.md   設計判断の記録。何をなぜ選び、何を却下したか
+  experiments.md 実験結果・検証済みの知見。実測で確定した事実だけを書く
 
 .claude/rules/   Claude Code が該当ファイルを触るときだけ読む詳細規約
   mermaid.md     図を作るときの手順と原則
