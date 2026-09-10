@@ -19,7 +19,7 @@ would still produce NaN even if the RSLC contained real terrain heights.
 
 Reproduced with the bundled test data only — no NISAR data needed. The build is
 23f99329d; `BaseL2WriterSingleInput.py` is byte-identical at the current `develop`
-(f42cea75b), and has not changed since 07a033f4 (2025-05-15):
+(67bccb0ce), and has not changed since 07a033f4 (2025-05-15):
 
 ```console
 $ ctest -R '^test\.python\.pkg\.nisar\.workflows\.gcov$' -V

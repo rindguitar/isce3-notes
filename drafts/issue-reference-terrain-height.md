@@ -27,7 +27,7 @@ fixing #165 would not change the outcome here: the geocoded layer would still be
 ## Version
 
 Reproduced on `develop` @ 23f99329d (0.26.0-dev), and the code in question is
-unchanged in the current `develop` @ f42cea75b. It has not been touched since
+unchanged in the current `develop` @ 67bccb0ce. It has not been touched since
 07a033f4 (2025-05-15, "Update GCOV & GSLC writer to geocode 1-D LUTs").
 
 ## Symptom
