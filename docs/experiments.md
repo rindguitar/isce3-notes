@@ -199,6 +199,19 @@ flag_luts_are_1d_az = (all([var in LUT_1D_AZ_DATASETS for var in input_ds_name_l
 `LUT_1D_AZ_DATASETS = ['referenceTerrainHeight']` という定数は、
 **この 1 つのデータセットのためだけに存在している。**
 
+### 現在の実データは 100% 1 次元（2026-09-10 確認）
+
+* **ISCE3 に 2 次元で書く経路が無い。** 生成は `writers/SLC.py:489` の 1 か所、
+  形状はアジマス長 `np.zeros(n)` で固定 → **取得方法によらず必ず 1 次元**
+* **仕様も書き分けている**（`XML/L2/nisar_L2_GCOV.xml`）:
+  `sourceData` 側は `sourceDataDopplerCentroidTimeLength`（**1 次元**）、
+  ジオコード済み側は `dopplerCentroidShape`（**2 次元**）
+  → **1 次元を 2 次元にするのがこの処理の役割**であり、「1 次元は対象外」ではない
+* 実測: RSLC 2 本 + `envisat.h5` すべて ndim=1。GCOV の `sourceData` も ndim=1 で
+  **値は入っている**（有効 79/79・31/31）。**ジオコード済みだけが全 NaN**
+* → **2 次元の実データはまだ存在しない。**安全弁は、まだ無いケースのために
+  現存する唯一のケースを閉ざしている
+
 ### 修正案の検証（2026-09-10。`~/isce3` は書き換えず複製で検証し、毎回 md5 で復元確認）
 
 **元のコードは 2 つの判断を 1 つの条件で兼ねていた。そこが誤りの本体。**
