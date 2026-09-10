@@ -163,6 +163,36 @@ effectiveVelocity      → Size is 240, 80    ← 本物の 2 次元 LUT
 | テストの合否 | 合格 | **合格**（変わらず） |
 | 科学データ `VVVV` | — | **ビット単位で完全一致（副作用なし）** |
 
+### 攻撃側から見直して確かめたこと（2026-09-10）
+
+「他に詰められる点は無いか」を自分で潰した記録。
+
+| 疑い | 検証結果 |
+|---|---|
+| 公式版 `0.25.16` に、そもそもこの判定式が入っていたのか | ✅ **入っている。**導入コミット `07a033f4f` は `v0.25.16` に含まれ、
+該当ファイルは **`v0.25.16` と HEAD で完全に同一**（差分が空） |
+| 公式プロダクトの NaN は別原因では | ✅ **同じジオグリッド上の他の層は埋まっている。**
+028_152 は 10 層（10〜74%）、028_168 は 4 層が有効値を持ち、**`referenceTerrainHeight` だけが 0.00%** |
+| `GDAL_MEM_ENABLE_OPEN=YES` に依存しているのでは | ✅ **外しても完全に同一**（エラー 4 回・`(az. vector)` 0 回・0/410 で合格） |
+| `slantRange` は条件付きで書かれるのでは | ✅ **無条件。**`SLC.py` の `set_parameters()` 内で `require_lut_axes()` を条件なしで呼び、
+軸は 2 次元の Doppler LUT から作られる |
+| `tests/` に検証が増えたのでは | ✅ HEAD 時点でも **出現 0 件** |
+| 影響範囲はどこまでか | ✅ `BaseL2WriterSingleInput` を継承するのは **`GcovWriter` と `GslcWriter` の 2 つだけ** |
+
+🔴 **製品仕様 XML に定義があった**（`python/packages/nisar/products/XML/L2/nisar_L2_GCOV.xml:2654`）。
+
+```xml
+<real name="/science/LSAR/GCOV/metadata/processingInformation/parameters/referenceTerrainHeight"
+      shape="dopplerCentroidShape" width="32">
+  ... _FillValue="nan" ... units="meters">Reference terrain height as a function of map coordinates
+```
+
+* **仕様は「地図座標の関数」として定義している** → 埋まっているべき層であり、置き場所の間違いではない
+* **形状は `dopplerCentroidShape`**（`dopplerCentroid` と同じ）。
+  公式プロダクトでは **`dopplerCentroid` が 23〜30% 埋まり、`referenceTerrainHeight` は 0%**。
+  **同じ形状・同じジオグリッドで、一方だけが空**
+* `_FillValue="nan"` なので、**全 NaN は「有効値がどこにも無い」を意味する**
+
 ---
 
 ## 6. 環境が原因ではないことの検証（2026-09-04）
