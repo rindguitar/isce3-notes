@@ -75,6 +75,32 @@ NISAR_L2_PR_GCOV_028_168_D_126_0005_NASV_A_20260824T211408_20260824T211412_P0502
 NISAR_L2_PR_GCOV_028_152_A_156_2005_DHDH_A_20260823T185248_20260823T185253_P05023_N_P_J_001
 ```
 
+### History
+
+For context, the layer appears never to have been populated since geocoding was
+introduced:
+
+| version | change | outcome |
+|---|---|---|
+| v0.23.0 | #1928 copies `referenceTerrainHeight` into `sourceData` | — |
+| **v0.24.2** | #1929 geocodes it | all-NaN from here on: there was no 1-D handling, the dataset was always opened as a raster |
+| v0.25.0 | #2137 adds 1-D LUT geocoding, including a unit test "to exercise the geocoding of 1D LUTs" | still all-NaN |
+
+Two details suggest the 1-D case was meant to be handled rather than skipped:
+
+* #1929 wrapped the raster creation in a `try/except` whose comment names the case
+  explicitly — *"Dataset is a 1-D vector instead of a 2-D array"*. That guard cannot
+  fire: `isce3.io.Raster()` **succeeds** on a 1-D dataset (GDAL reports `80 x 1`);
+  the failure happens later, in the read.
+* #2137 added the 1-D geocoding path and a unit test for it, but the test covers the
+  range-vector (crosstalk) case in `winnipeg.h5`, which has no `referenceTerrainHeight`.
+
+The sibling condition for range vectors carries no such gate, and that path works:
+
+```python
+flag_luts_are_1d_rg = all([var in LUT_1D_RG_DATASETS for var in input_ds_name_list])
+```
+
 ### If it is not intended
 
 Two things are conflated in that one condition: whether the values need to be

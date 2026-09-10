@@ -290,7 +290,56 @@ gdalinfo 'HDF5:"...":/.../effectiveVelocity'
 
 ---
 
-## 7. 修正案（実験で検証済み・2026-09-10）
+## 7. 経緯と設計意図（git 履歴）
+**「1 次元を意図的に足切りしたのでは」を確かめるため、履歴を遡った。結論は逆だった。**
+
+| 版 | 変更 | 結果 |
+|---|---|---|
+| v0.23.0（2024-08） | #1928 が `referenceTerrainHeight` を `sourceData` へ複製 | — |
+| **v0.24.2（2025-01）** | **#1929 がジオコーディングを追加** | 🔴 **ここから全 NaN**。1 次元の扱いは無く、常に 2 次元として開いていた |
+| v0.25.0（2025-05） | #2137 が 1 次元 LUT のジオコーディングを追加 | 🔴 **まだ全 NaN**。アジマス側の分岐が開かない |
+| v0.25.16（2026-06） | 公式プロダクトの生成版 | 🔴 全 NaN のまま配布 |
+
+**2 回、1 次元に対処しようとして 2 回とも外している。**
+
+1. **#1929 の時点で 1 次元を想定していた。** ラスタ生成が `try/except` で囲まれ、
+   コメントに理由が書いてある:
+
+   ```python
+   # Read `raster_ref` catching/handling potential problems:
+   # - Dataset does not exist;
+   # - Dataset is a 1-D vector instead of a 2-D array.   ← ここ
+   try:
+       temp_raster = isce3.io.Raster(raster_ref)
+   ```
+
+   ⚠️ **この防御は働かない。** 1 次元データでも `isce3.io.Raster()` は**成功する**
+   （GDAL が 80×1 として開く）。失敗するのは**その後の読み出し**なので例外にならない
+
+2. **#2137 は 1 次元対応を実装し、テストまで追加している。**
+   コミットメッセージの最後に **`add unit test to exercise the geocoding of 1D LUTs`**。
+   ⚠️ ただし追加されたテストは **crosstalk（レンジ方向）だけ**で、
+   使われた `winnipeg.h5` には **`referenceTerrainHeight` が存在しない**
+   （同コミットで `winnipeg.h5` に crosstalk を足している）
+
+**兄弟の判定と比べると差が際立つ。**
+
+```python
+flag_luts_are_1d_rg = all([var in LUT_1D_RG_DATASETS for var in input_ds_name_list])
+                      # 名前だけで判定 → 動く
+
+flag_luts_are_1d_az = (all([var in LUT_1D_AZ_DATASETS for var in input_ds_name_list])
+                       and slant_range_path not in self.input_hdf5_obj)
+                       # ↑ この条件が余分。決して真にならない
+```
+
+→ **「1 次元を足切りした」のではなく、「1 次元に対応しようとして届かなかった」。**
+`LUT_1D_AZ_DATASETS = ['referenceTerrainHeight']` という定数は、
+**この 1 つのデータセットのためだけに存在している。**
+
+---
+
+## 8. 修正案（実験で検証済み・2026-09-10）
 
 `~/isce3` は書き換えず、**`~/isce3-build/install` の複製にパッチを当てて検証し、
 毎回 md5 で復元を確認した**（復元後 `8c9808d4…` = ソースと一致）。
