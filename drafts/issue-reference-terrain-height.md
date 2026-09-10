@@ -139,23 +139,40 @@ Only this metadata layer is affected; the science datasets are unaffected.
 
 ## A possible fix, for reference
 
-Deciding the rank from the dataset itself rather than from a sibling:
+Two things are conflated in that one condition: whether the values need to be
+replicated along range (a property of the dataset's rank), and what the range axis
+should be (whether the group has a `slantRange`). Separating them fixes it:
 
 ```python
+# the rank decides whether to tile
 flag_luts_are_1d_az = (
     all([var in LUT_1D_AZ_DATASETS for var in input_ds_name_list]) and
     all([f'{input_h5_group_path}/{var}' in self.input_hdf5_obj and
          self.input_hdf5_obj[f'{input_h5_group_path}/{var}'].ndim == 1
          for var in input_ds_name_list]))
+
+# the presence of slantRange decides the range axis
+if slant_range_path in self.input_hdf5_obj:     # was: if not flag_luts_are_1d_az:
 ```
 
-With this change I observed: the GDAL error disappears from both the GCOV and GSLC
-workflow tests (4 -> 0 occurrences), the layer is populated (134 of 410 valid pixels
-on `envisat.h5`; 31,228 of 156,420 on a real NISAR scene, the rest being outside the
-LUT extent), the existing tests still pass, and the science datasets are bit-identical.
+I cross-checked this against the 2-D path you already have. I rewrote
+`referenceTerrainHeight` in `tests/data/envisat.h5` as an `(80, 240)` array — the same
+values replicated along range — and ran the **unmodified** code on it. The result
+matches the patched 1-D run exactly: same valid-pixel mask, maximum absolute
+difference 0.0. In other words this produces today what the planned 2-D LUT would
+produce later.
 
-I am not sure whether keying on `.ndim` is the right long-term choice given the plan
-to move to a 2-D LUT, so I am reporting the problem rather than proposing a patch.
+Observed with the change: the GDAL errors disappear (6 -> 0 across the GCOV and GSLC
+tests), the layer is populated (0/410 -> 178/410 on `envisat.h5`), the science datasets
+are bit-identical, the other geocoded metadata layers are unchanged, the range-vector
+(crosstalk) path still runs as before, and both tests pass. Checking only the rank —
+without the second change — also removes the errors but covers a narrower range extent
+(134/410), because the 1-D branch rebuilds the range axis from the RSLC radar grid
+instead of using the axis already present in the group. I have not run the full ctest
+suite with the change yet.
+
+I am reporting the problem rather than opening a patch straight away, since the choice
+of axis handling is yours to make.
 Happy to open a PR if this direction looks reasonable, and to add a regression test
 that asserts the geocoded layer contains valid values.
 

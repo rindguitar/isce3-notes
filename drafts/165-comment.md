@@ -77,10 +77,37 @@ NISAR_L2_PR_GCOV_028_152_A_156_2005_DHDH_A_20260823T185248_20260823T185253_P0502
 
 ### If it is not intended
 
-Checking the rank of the dataset itself instead of a sibling makes the error
-disappear (4 -> 0 in both the GCOV and GSLC tests), populates the layer (134 of 410
-on `envisat.h5`, the rest being outside the LUT extent), keeps the existing tests
-passing, and leaves the science datasets bit-identical. I am happy to open a separate
-issue with the details and a PR with a regression test — there is currently no test
-covering this dataset. Just let me know which you prefer, and whether keying on the
-rank is acceptable given the plan to move to a 2-D LUT.
+Two things are conflated in that one condition: whether the values need to be
+replicated along range (a property of the dataset's rank), and what the range axis
+should be (whether the group has a `slantRange`). Separating them fixes it:
+
+```python
+# the rank decides whether to tile
+flag_luts_are_1d_az = (
+    all([var in LUT_1D_AZ_DATASETS for var in input_ds_name_list]) and
+    all([f'{input_h5_group_path}/{var}' in self.input_hdf5_obj and
+         self.input_hdf5_obj[f'{input_h5_group_path}/{var}'].ndim == 1
+         for var in input_ds_name_list]))
+
+# the presence of slantRange decides the range axis
+if slant_range_path in self.input_hdf5_obj:     # was: if not flag_luts_are_1d_az:
+```
+
+I cross-checked this against the 2-D path you already have. I rewrote
+`referenceTerrainHeight` in `tests/data/envisat.h5` as an `(80, 240)` array — the same
+values replicated along range — and ran the **unmodified** code on it. The result
+matches the patched 1-D run exactly: same valid-pixel mask, maximum absolute
+difference 0.0. In other words this produces today what the planned 2-D LUT would
+produce later.
+
+Observed with the change: the GDAL errors disappear (6 -> 0 across the GCOV and GSLC
+tests), the layer is populated (0/410 -> 178/410 on `envisat.h5`), the science datasets
+are bit-identical, the other geocoded metadata layers are unchanged, the range-vector
+(crosstalk) path still runs as before, and both tests pass. Checking only the rank —
+without the second change — also removes the errors but covers a narrower range extent
+(134/410), because the 1-D branch rebuilds the range axis from the RSLC radar grid
+instead of using the axis already present in the group. I have not run the full ctest
+suite with the change yet.
+
+I am happy to open a separate issue with the details and a PR with a regression test —
+there is currently no test covering this dataset. Just let me know which you prefer.
