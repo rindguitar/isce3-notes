@@ -274,6 +274,10 @@ gdalinfo 'HDF5:"...":/.../effectiveVelocity'
 **言える**
 
 * データ自身は 1 次元であり、判定式は 3 製品すべてで誤答する（ビルド不要で確認）
+* **仕様はこの層を「地図座標の関数」と定義している**（`XML/L2/nisar_L2_GCOV.xml`、
+  `shape="dopplerCentroidShape"`）。**埋まっているべき層**であり、置き場所の間違いではない
+* **取得方法の問題ではない。** ISCE3 に 2 次元で書く経路が無く
+  （生成は `writers/SLC.py` の 1 か所、アジマス長で固定）、現在の実データは 1 次元しかない
 * 公式配布プロダクトでも同症状（**他人の環境・リリース版 0.25.16**）
 * 同じ実行の中で他のレイヤは正常 → ジオコーディング基盤の問題ではない
 * 1 次元経路に入った形跡が無い（専用警告が 0 回）
@@ -336,46 +340,6 @@ flag_luts_are_1d_az = (all([var in LUT_1D_AZ_DATASETS for var in input_ds_name_l
 → **「1 次元を足切りした」のではなく、「1 次元に対応しようとして届かなかった」。**
 `LUT_1D_AZ_DATASETS = ['referenceTerrainHeight']` という定数は、
 **この 1 つのデータセットのためだけに存在している。**
-
-### 現在の実データは 100% 1 次元（仕様がそう定めている）
-
-**「実データの取り方の問題では」を潰した。違う。**
-
-**① ISCE3 に 2 次元で書く経路が存在しない。**
-生成箇所は `writers/SLC.py:489` の 1 か所だけで、形状はアジマス長で固定:
-
-```python
-n = dop.data.shape[0]                      # アジマス方向の長さ
-write_dataset(g, "referenceTerrainHeight", np.float32, np.zeros(n), ...)
-```
-
-→ **ISCE3 が作る RSLC は、どう取得しようと必ず 1 次元。**
-
-**② 製品仕様も 1 次元と定義している**（`XML/L2/nisar_L2_GCOV.xml`）。
-
-| 場所 | 仕様の shape | 次元 |
-|---|---|---|
-| `sourceData/.../referenceTerrainHeight`（RSLC の写し） | `sourceDataDopplerCentroidTimeLength` | **1 次元**（`dimension` が 1 個） |
-| `processingInformation/parameters/referenceTerrainHeight`（ジオコード済み） | `dopplerCentroidShape` | **2 次元**（`dopplerCentroidLength` × `dopplerCentroidWidth`） |
-
-→ **1 次元を受け取って 2 次元にすることが、この処理の仕様上の役割。**
-「1 次元だから対象外」ではない。
-
-**③ 手元の全プロダクトで実測。**
-
-| プロダクト | RSLC 側（1 次元のはず） | ジオコード済み（2 次元のはず） |
-|---|---|---|
-| RSLC `028_152` | ndim=1 `(79,)` 有効 79/79 | — |
-| RSLC `028_168` | ndim=1 `(31,)` 有効 31/31 | — |
-| `envisat.h5`（同梱） | ndim=1 `(80,)` 有効 80/80 | — |
-| GCOV `028_152` | sourceData: ndim=1 `(79,)` 有効 79/79 | ndim=2 `(329,339)` **有効 0/111,531** |
-| GCOV `028_168` | sourceData: ndim=1 `(31,)` 有効 31/31 | ndim=2 `(395,396)` **有効 0/156,420** |
-
-⚠️ **同じ値が、単純コピーの経路では正しく入り、ジオコードの経路だけが空になる。**
-（`winnipeg.h5` にはデータセット自体が無い）
-
-> **結論: 2 次元の実データはまだ 1 つも存在しない。**
-> つまりあの安全弁は、**まだ存在しないケースのために、現存する唯一のケースを閉ざしている。**
 
 ### なぜその条件を書いたのか（相手の意図の読み取り）
 
