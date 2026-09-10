@@ -95,22 +95,35 @@ Home はハブとして機能させる。構成は以下の順:
 git clone https://github.com/rindguitar/isce3-notes.wiki.git /tmp/wiki
 ```
 
+⚠️ **この wiki のページ間リンクは `[[表示名|ページ名]]` 記法**（MediaWiki 形式）。
+markdown 記法（`[表示名](ページ名)`）で走査すると**ほとんど拾えない**
+（2026-09-10 に取り違え、102 本を 5 本と誤測定した）。
+
 ```python
 # 2. ページ間のリンクを抽出する
-#    各ページ本文の ](ページ名) を走査し、wiki 内のページ名と一致するものだけ拾う
+#    各ページ末尾の `## 関連ページ` から [[表示名|ページ名]] を走査する
 #    向きは落とす。往復しているものは 1 本に畳む
 import os, re
 d = '/tmp/wiki'
 skip = {'Home', 'Documentation-Map'}
 pages = {f[:-3]: open(os.path.join(d, f), encoding='utf-8').read()
          for f in os.listdir(d) if f.endswith('.md')}
-edges = {tuple(sorted((src, t.split('#')[0].strip())))
+
+def related(txt):
+    m = re.search(r'##\s*関連ページ(.*)$', txt, re.S)
+    return [] if not m else [x.split('|')[-1].split('#')[0].strip()
+                             for x in re.findall(r'\[\[([^\]]+)\]\]', m.group(1))]
+
+edges = {tuple(sorted((src, t)))
          for src, txt in pages.items() if src not in skip
-         for t in re.findall(r'\]\(([^)]+)\)', txt)
-         if t.split('#')[0].strip() in pages
-         and t.split('#')[0].strip() not in skip | {src}}
-print(len(pages), 'ページ /', len(edges), '本')
+         for t in related(txt)
+         if t in pages and t not in skip | {src}}
+print(len(pages) - len(skip), 'ページ /', len(edges), '本')
 ```
+
+ジャンル別に集計するときは `Home.md` の `<details>` を走査するが、
+⚠️ **末尾の更新履歴も `<details>`** なので除外する
+（`<summary>` に `<b>` を含むものだけ拾う）。
 
 3. **密に繋がるまとまりを見つける**。分類を人が決めないことが大事で、そうすることで
    「Home の分類と実際のリンク構造がずれている」といった発見が出る
