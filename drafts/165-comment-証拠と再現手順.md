@@ -19,6 +19,39 @@
 
 ## 1. まず、手元の環境が健全であることの確認
 
+### 1-0. どうやって環境を作ったか
+
+**「環境構築が間違っているのでは」を検討できるよう、作り方をそのまま書いておく。**
+詳細と落とし穴は `reference/environment.md`。
+
+```bash
+# 1. 依存環境（conda）
+source ~/miniforge3/etc/profile.d/conda.sh
+cd ~/isce3
+conda env create -f environment.yml
+# ⚠️ environment.yml は下限指定のみで上限が無い。この 2 つの固定は必須
+conda install -n isce3 'eigen<4' 'pybind11<3' ccache
+conda activate isce3
+
+# 2. ビルド（CMake 直叩き。ビルド先はリポジトリの外）
+cmake -S ~/isce3 -B ~/isce3-build -G Ninja \
+  -DISCE3_FETCH_DEPS=OFF \
+  -DWITH_CUDA=OFF \
+  -DCMAKE_INSTALL_PREFIX=~/isce3-build/install
+cmake --build ~/isce3-build -j8
+cmake --install ~/isce3-build
+
+# 3. テスト
+ctest --test-dir ~/isce3-build --output-on-failure
+```
+
+環境変数（`PYTHONPATH` / `LD_LIBRARY_PATH` / `GDAL_MEM_ENABLE_OPEN`）は
+conda の activate フックで設定している。**これが無いと対話的な Python から
+`import isce3` が通らない。**
+
+`-DWITH_CUDA=OFF` が必要なのは、既定が `Auto` でシステムの nvcc（CUDA 12.0）を
+拾ってしまい、環境の GCC 15.3 と非対応でビルドが壊れるため。
+
 ### 1-1. 実際に実行される ISCE3 の実体
 
 ```
@@ -35,12 +68,51 @@ python  : 3.12.13
 8c9808d4de570a04cb3f86bbc8822fa3  ~/isce3/python/packages/nisar/products/writers/BaseL2WriterSingleInput.py
 ```
 
-### 1-2. ビルドとソースの対応
+### 1-2. ビルドとソースの対応（ここは誤解されやすいので詳しく）
 
-* インストール済みのビルドは **`23f99329d`**
-* 手元の `develop` は現在 **`67bccb0ce`**（2026-09-10 に追従）
-* ⚠️ **該当ファイルは両者で完全に同一**（`git diff 23f99329d 67bccb0ce -- <file>` が空）
-  → **ビルドが古いことは今回の結論に影響しない**
+**`23f99329d` は git の短縮コミットハッシュ**（`Solve CI failures (#366)`、2026-08-24）。
+「インストール済みのビルドは `23f99329d`」とは、**`~/isce3` がそのコミットだったときの
+ソースから作られたものが `~/isce3-build/install` に入っている**という意味。
+
+版名 `0.26.0-dev+23f99329d` の内訳（実装は `~/isce3/.cmake/Isce3Version.cmake`）:
+
+| 部分 | 出どころ |
+|---|---|
+| `0.26.0-dev` | `~/isce3/VERSION.txt` の中身 |
+| `+23f99329d` | `git describe --always --dirty` の出力 |
+
+⚠️ **版名は configure 時に確定する。** 指すのは「最後に configure したときの HEAD」で、
+最後にビルドしたソースとは限らない。作業ツリーが汚れていれば `-dirty` が付く
+（今回は付いていない = **汚れていない状態でビルドした**）。
+
+現状:
+
+| 項目 | 値 |
+|---|---|
+| インストール済みの版 | `0.26.0-dev+23f99329d`（2026-08-30 に configure / build） |
+| ソースの HEAD | `67bccb0ce`（2026-09-10 に追従） |
+| その間の **C++ の変更** | **ゼロ**（`git diff --stat` が空） |
+| その間の Python の変更 | 8 ファイル |
+
+**それでも結論に影響しない理由:**
+
+1. ⚠️ **問題のファイルは両者で完全に同一。**
+   `git diff 23f99329d 67bccb0ce -- <BaseL2WriterSingleInput.py>` が空で、
+   インストール済みのものとも **md5 一致**（上記 1-1）
+2. **C++ の変更がゼロ**なので、コンパイル済みの `.so` は HEAD に対しても正しい
+3. 正直に書くと、**古い 8 ファイルのうち 5 つは GCOV ワークフローから間接的に
+   import される**（`antenna/*`・`mixed_mode`・`InSAR_base_writer`・`Raw`）。
+   ただしいずれも**メタデータのジオコーディング経路ではない**うえ、
+   **後述の検証 A は ISCE3 を一切使わない**ので、この点は結論を左右しない
+
+**確かめ方**（更新時刻ではなく中身で比べる。`cmake --install` はソースの
+更新時刻を保持するため、mtime は当てにならない）:
+
+```bash
+python3 -c 'import isce3; print(isce3.__version__, isce3.__file__)'
+git -C ~/isce3 log --oneline -1
+diff -rq ~/isce3-build/install/packages/nisar ~/isce3/python/packages/nisar | grep '^Files'
+```
 
 ### 1-3. テストの基準値
 
@@ -213,3 +285,6 @@ gdalinfo 'HDF5:"...":/.../effectiveVelocity'
   加えて B（公式プロダクト）が別環境での発生を示している
 * 上流が**この件を既に把握しているかどうか**は分からない（内部議論が非公開）
   → だから **#165 で「意図した挙動か」を先に聞く**
+* インストール済みツリーは **Python 8 ファイルが古い**（C++ はゼロ差分）。
+  問題のファイルは同一だが、**完全に揃えたいなら `cmake --install ~/isce3-build` を
+  実行してから再現を取り直す**とこの但し書きが消える
