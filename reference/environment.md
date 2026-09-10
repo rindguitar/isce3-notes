@@ -1,6 +1,13 @@
 # 環境スナップショット
 
-最終更新: 2026-08-23 / ISCE3 `0.26.0-dev+0d1600d8`（HEAD = `0d1600d8`）
+最終更新: 2026-09-10
+
+| | |
+|---|---|
+| ソースの HEAD（`~/isce3`） | `67bccb0ce` |
+| インストール済みの版 | `0.26.0-dev+23f99329d` |
+
+⚠️ **この 2 つがずれているのは異常ではない。** 意味は「インストール済みのビルドとは何か」を参照。
 
 状況が変わったらこのファイルを上書き更新する。
 
@@ -24,8 +31,11 @@
 ```
 ~/miniforge3/              conda 本体（全プロジェクト共通）
   └── envs/isce3/          ISCE3 の実行環境
-~/isce3/                   upstream の fork をクローンしたもの
+~/isce3/                   upstream の fork をクローンしたもの（ソース）
+~/isce3-build/             ビルド生成物。リポジトリの外に置く
+  └── install/             実際に import されるもの（.so と .py の複製）
 ~/isce3-notes/             このメモ
+~/nisar-data/              NISAR の実データ。どちらのリポジトリにも入れない
 ```
 
 ## 実際に解決された依存バージョン
@@ -114,9 +124,9 @@ cmake --install ~/isce3-build
 GDAL_MEM_ENABLE_OPEN=YES ctest --test-dir ~/isce3-build --output-on-failure
 ```
 
-**基準値は 235/237**（約 10 分）。落ちる 2 件は既知
-（`geometry.geometry` = 最適化起因、`stage_dem` = upstream のバグ）。
-3 件以上落ちたら自分の変更を疑う。
+**基準値は 236/237**（655 秒）。落ちるのは `stage_dem` の 1 件のみ
+（upstream のバグ・環境と無関係）。**2 件以上落ちたら自分の変更を疑う。**
+`geometry.geometry` は 2026-08-30 に解決した（upstream が未初期化変数を修正）。
 
 ### 開発用の環境変数（conda の activate フック）
 
@@ -209,3 +219,104 @@ python3 -c 'import isce3; print(isce3.__version__)'
 なお pip 版と CMake 版を同居させると `sys.path` の優先順位で
 どちらを見ているか分からなくなるため、CMake 版に移る際は
 `pip uninstall isce3` しておく。
+
+---
+
+## インストール済みのビルドとは何か
+
+「**インストール済みのビルドは `23f99329d`**」という言い方は、
+**`~/isce3` がコミット `23f99329d` だったときのソースから作られたものが
+`~/isce3-build/install` に入っている**、という意味。
+
+`23f99329d` は **git の短縮コミットハッシュ**（`Solve CI failures (#366)`、2026-08-24）。
+バージョン番号ではない。
+
+### 3 つの場所と、それぞれを作るコマンド
+
+| 場所 | 中身 | 作るコマンド |
+|---|---|---|
+| `~/isce3` | ソース（git 管理下） | `git` |
+| `~/isce3-build` | 中間生成物・`ctest` の実行場所 | `cmake -S … -B …` / `cmake --build` |
+| `~/isce3-build/install` | **実際に `import` されるもの**（`.so` と `.py` の複製） | `cmake --install` |
+
+```mermaid
+flowchart LR
+    SRC["ソース<br/>~/isce3<br/>（git の HEAD）"]
+    BUILD["ビルド生成物<br/>~/isce3-build"]
+    INST["インストール先<br/>~/isce3-build/install"]
+    PY["import isce3"]
+
+    SRC -->|"cmake -S -B（configure）<br/>★ここで版名が確定する"| BUILD
+    SRC -->|"cmake --build<br/>（C++ を翻訳）"| BUILD
+    BUILD -->|"cmake --install<br/>（.so と .py を複製）"| INST
+    INST -->|"PYTHONPATH / LD_LIBRARY_PATH"| PY
+```
+
+`import isce3` が読むのは **3 番目だけ**。activate フックが
+`PYTHONPATH=~/isce3-build/install/packages` を通しているため
+（→「開発用の環境変数」）。**ソースを直接読んでいるわけではない。**
+
+### 版名の読み方
+
+`0.26.0-dev+23f99329d` の内訳（実装は `~/isce3/.cmake/Isce3Version.cmake`）:
+
+| 部分 | 出どころ |
+|---|---|
+| `0.26.0-dev` | `~/isce3/VERSION.txt` の中身そのまま |
+| `+23f99329d` | `git describe --always --dirty` の出力 |
+
+Python からは `isce3.__version__` で読める。実体は C++ 拡張モジュールに焼き込まれている
+（`__version__ = extisce3.__version__`）。
+
+⚠️ **落とし穴が 3 つある。**
+
+1. **版名は configure 時に確定する。** `cmake --build` を回しただけでは更新されない
+   ことがある。つまり版名が指すのは「**最後に configure したときの HEAD**」であって、
+   「最後にビルドしたソース」とは限らない
+2. HEAD がちょうどタグを指しているとハッシュは付かない（`0.26.0-dev` だけになる）
+3. 作業ツリーが汚れていると `-dirty` が付く（例: `0.26.0-dev+23f99329d-dirty`）
+
+### 現在ずれている理由（2026-09-10 時点）
+
+最後に configure / build したのは **2026-08-30**（当時の HEAD が `23f99329d`）。
+その後 upstream に 2 回追従したが、**入ったのは Python のみで C++ は無変更**なので
+再ビルドしていない。結果としてインストール済みの Python が **8 ファイル**古い。
+
+```
+nisar/antenna/beamformer.py          nisar/products/insar/InSAR_base_writer.py
+nisar/antenna/pattern.py             nisar/products/readers/Raw/Raw.py
+nisar/mixed_mode/__init__.py         nisar/workflows/focus.py
+nisar/mixed_mode/logic.py            nisar/workflows/resample_slc_v2.py
+```
+
+**これらを使う作業をしないなら、そのままで問題ない。**
+
+### 古くなっていないか確かめる手順
+
+⚠️ **更新時刻（mtime）は当てにならない。** `cmake --install` はソース側の更新時刻を
+保持するので、インストール先のほうが古く見えることがある。**中身で比べる。**
+
+```bash
+# 1. インストール済みの版と、その実体の場所
+python3 -c 'import isce3; print(isce3.__version__, isce3.__file__)'
+
+# 2. ソースの HEAD
+git -C ~/isce3 log --oneline -1
+
+# 3. 中身の差（空なら一致。__pycache__ は無視してよい）
+diff -rq ~/isce3-build/install/packages/nisar ~/isce3/python/packages/nisar | grep '^Files'
+
+# 4. 特定のファイルだけ確かめる
+md5sum ~/isce3-build/install/packages/nisar/<path>.py ~/isce3/python/packages/nisar/<path>.py
+```
+
+### 何を変えたら、何をやり直すか
+
+| 変えたもの | 必要な操作 |
+|---|---|
+| ソースを読んだだけ | **何も要らない** |
+| Python のコード | `cmake --install ~/isce3-build` |
+| C++ / CUDA のコード | `cmake --build ~/isce3-build -j8` → `cmake --install ~/isce3-build` |
+| CMake オプション・依存・版名も合わせたい | `cmake -S ~/isce3 -B ~/isce3-build …` から configure し直す |
+
+⚠️ フルビルド（15〜40 分）とフルテスト（約 10 分）は**ユーザーが実行する**。

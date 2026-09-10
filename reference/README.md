@@ -9,6 +9,6 @@
 
 | 資料 | 内容 | 最終更新 |
 |---|---|---|
-| [environment.md](environment.md) | マシン構成、実際に解決された依存バージョン、環境の再現手順 | 2026-08-23 |
+| [environment.md](environment.md) | マシン構成、依存バージョン、環境の再現手順、**インストール済みのビルドが何を指すか** | 2026-09-10 |
 | [build-options.md](build-options.md) | CMake / scikit-build のビルドオプションと挙動 | 2026-08-23 |
 | [runtime-and-packaging.md](runtime-and-packaging.md) | 実行形態（起動/停止が不要な理由）、Docker の位置づけ、pinned な conda spec file | 2026-08-23 |

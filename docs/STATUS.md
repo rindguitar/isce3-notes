@@ -24,7 +24,25 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 
 ## 前回やったこと
 
-2026-09-10: **upstream の更新確認。重複なし、ただし該当関数の周辺が活発になった。**
+2026-09-10（2 本目）: **「インストール済みのビルド」の意味を `reference/environment.md` に文書化した。**
+
+- 発端: 「`23f99329d` はコミットコードのことか」という指摘。**記録に無い穴だった**
+- 追記した内容:
+  - **3 つの場所の役割**（`~/isce3` / `~/isce3-build` / `~/isce3-build/install`）と図
+    （`import isce3` が読むのは**インストール先だけ**でソースではない）
+  - **版名の読み方**: `0.26.0-dev+23f99329d` = `VERSION.txt` + `git describe --always --dirty`
+    （実装は `~/isce3/.cmake/Isce3Version.cmake`）
+  - ⚠️ **版名は configure 時に確定する。** 指すのは「最後に configure したときの HEAD」で、
+    最後にビルドしたソースとは限らない。タグちょうどならハッシュ無し、汚れていれば `-dirty`
+  - ⚠️ **mtime は当てにならない**（`cmake --install` がソースの更新時刻を保持するため）。
+    **中身で比べる**（`diff -rq` / `md5sum`）
+  - 何を変えたら何をやり直すかの対応表
+- 現状の実測: インストール済みの Python が **8 ファイル**古い（C++ は無変更）。
+  これらを使う作業をしないなら**そのままで問題ない**
+- ⚠️ `reference/environment.md` の古い記述も修正（**基準値 235/237 → 236/237**、
+  パス一覧に `~/isce3-build` と `~/nisar-data` が無かった）
+
+2026-09-10（1 本目）: **upstream の更新確認。重複なし、ただし該当関数の周辺が活発になった。**
 
 - upstream/develop が `f42cea75b` → **`67bccb0ce`**。✅ **追従済み**（fast-forward）
   - #373 mixed_mode / #332 telemetry のエラー文 / #286 BCAL / #360 InSAR spec (#297 の修正)
