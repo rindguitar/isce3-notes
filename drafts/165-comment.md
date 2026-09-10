@@ -47,7 +47,8 @@ range-vector branch added in the same change runs normally:
 
 ### Why it happens
 
-`BaseL2WriterSingleInput.geocode_lut()` decides the rank of the LUT from the presence
+`BaseL2WriterSingleInput.geocode_metadata_group()` (reached via `geocode_lut()`)
+decides the rank of the LUT from the presence
 of a sibling `slantRange` dataset. But `slantRange` is the shared range axis of that
 group — it belongs to the genuinely 2-D LUTs stored next to it, and `require_lut_axes()`
 in the RSLC writer creates it unconditionally. In `tests/data/envisat.h5`:

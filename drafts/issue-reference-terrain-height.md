@@ -13,7 +13,8 @@ In GCOV and GSLC products, the geocoded layer
 is filled entirely with NaN. The workflow still exits with status 0, and the only
 visible symptom is a GDAL error printed to stderr, so this is easy to miss.
 
-The cause is in `BaseL2WriterSingleInput.geocode_lut()`: the rank of the LUT is
+The cause is in `BaseL2WriterSingleInput.geocode_metadata_group()`, reached via
+`geocode_lut()`: the rank of the LUT is
 inferred from the presence of a sibling `slantRange` dataset, but that dataset is
 the range axis shared by the *other*, genuinely 2-D LUTs stored in the same group.
 It is always present in an RSLC written by ISCE3, so the 1-D branch is never taken.
