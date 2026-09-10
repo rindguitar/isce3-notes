@@ -310,6 +310,21 @@ diff -rq ~/isce3-build/install/packages/nisar ~/isce3/python/packages/nisar | gr
 md5sum ~/isce3-build/install/packages/nisar/<path>.py ~/isce3/python/packages/nisar/<path>.py
 ```
 
+### ⚠️ Python のコピーは 2 か所にある
+
+| 場所 | 更新するコマンド |
+|---|---|
+| `~/isce3-build/install/packages` | `cmake --install` |
+| `~/isce3-build/packages` | **`cmake --build`**（`--install` では更新されない） |
+
+**`ctest` が読むのはインストール先が先**。テスト定義の `PYTHONPATH` は
+`install/packages` を先頭に置き、`build/packages` はその後ろになる
+（`~/isce3-build/tests/python/packages/CTestTestfile.cmake` の
+`set_tests_properties(... ENVIRONMENT ...)` で確認できる）。
+
+対話的な `python3` から読まれるのも activate フック経由でインストール先。
+→ **通常はインストール先だけ揃っていればよい。**
+
 ### 何を変えたら、何をやり直すか
 
 | 変えたもの | 必要な操作 |

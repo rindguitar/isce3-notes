@@ -24,6 +24,22 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 
 ## 前回やったこと
 
+2026-09-10（3 本目）: **インストールを HEAD と揃え、再現を取り直した。**
+
+- `cmake --install ~/isce3-build` を実行（C++ の変更がゼロなので**再ビルドは不要**）。
+  ✅ **インストール先がソース `67bccb0ce` と完全一致**（`diff -rq` が空）
+- ✅ **再現を取り直して結果は同一**: エラー 4 回・`(az. vector)` 0 回・
+  `(rg. vector)` 4 回・出力 0/410 で合格
+  → 証拠から「ビルドが古いせいでは」という但し書きが消えた
+- ⚠️ **新しく分かったこと 2 つ**（`reference/environment.md` に追記）
+  - **Python のコピーは 2 か所ある。** `install/packages` は `cmake --install`、
+    `build/packages` は **`cmake --build`** で更新される（`--install` では更新されない）
+  - **`ctest` が読むのは `install/packages` が先頭**（`build/packages` はその後ろ）。
+    テスト定義の `ENVIRONMENT` プロパティで確認した
+- 版名は `0.26.0-dev+23f99329d` のまま（**configure 時に確定するため。異常ではない**）
+- ⚠️ `cmake` は conda 環境の中にある。**`sudo apt install cmake` はしない**
+  （ビルドに使ったのは `~/miniforge3/envs/isce3/bin/cmake` 4.4.2、CMakeCache に記録あり）
+
 2026-09-10（2 本目）: **「インストール済みのビルド」の意味を `reference/environment.md` に文書化した。**
 
 - 発端: 「`23f99329d` はコミットコードのことか」という指摘。**記録に無い穴だった**
