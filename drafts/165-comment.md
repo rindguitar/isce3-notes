@@ -124,7 +124,9 @@ I cross-checked this against the 2-D path you already have. I rewrote
 values replicated along range — and ran the **unmodified** code on it. The result
 matches the patched 1-D run exactly: same valid-pixel mask, maximum absolute
 difference 0.0. In other words this produces today what the planned 2-D LUT would
-produce later.
+produce later. I also ran the 2-D case **with** the change applied: the output is
+identical to the 2-D case without it (same mask, maximum absolute difference 0.0), so
+the change does not alter what happens once the LUT becomes 2-D.
 
 Observed with the change: the GDAL errors disappear (6 -> 0 across the GCOV and GSLC
 tests), the layer is populated (0/410 -> 178/410 on `envisat.h5`), the science datasets
