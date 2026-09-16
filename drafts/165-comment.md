@@ -37,6 +37,12 @@ In the product the test just wrote, on the metadata geogrid `(10, 41)`:
 | `calibrationInformation/frequencyA/noiseEquivalentBackscatter/HH` | 178 / 410 |
 | `processingInformation/parameters/referenceTerrainHeight` | **0 / 410** |
 
+The test still passes because the error is not raised as an exception and nothing in
+the test looks at the layer: the errors are emitted inside `GcovWriter.populate_metadata()`
+(step 2 of each iteration), while the only assertion compares the science data
+(`grids/frequencyA/HHHH`) against the noise power from the RSLC. The four occurrences are
+2 geocode modes x 2 noise-correction settings.
+
 The 1-D azimuth branch never runs. Its own warning never appears, while the
 range-vector branch added in the same change runs normally:
 

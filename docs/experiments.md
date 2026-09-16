@@ -141,6 +141,30 @@ effectiveVelocity      → Size is 240, 80    ← 本物の 2 次元 LUT
 | 同じ PR で入った `(rg. vector)` | **4 回**（crosstalk。こちらは動く） |
 | `tests/` 内の `referenceTerrainHeight` 出現回数 | **0**（検証しているテストが無い） |
 
+### なぜエラーが出てもテストが通るのか（テストの順序）
+
+**実測で確定**（2026-09-16）。`test_run_envisat` の各周回はこの順で進む。
+
+| 段 | やること | エラー |
+|---|---|---|
+| ① `gcov.run(cfg)` | **科学データ**（`grids/frequencyA/HHHH` ほか）を作る | **出ない** |
+| ② `GcovWriter.populate_metadata()` | **メタデータ**を地図座標へ貼り直す | 🔴 **ここだけで出る** |
+| ③ `h5py` で読む | `grids/frequencyA/HHHH` **だけ**を取り出す | — |
+| ④ `npt.assert_allclose(...)` | **唯一の assert。** ノイズ補正の有無による HHHH の差を、RSLC のノイズ電力と比較（`rtol=0.1`） | — |
+
+区間を印で挟んで実行し、`Access window out of range` が **② の中にしか現れない**ことを確認した。
+
+**通ってしまう理由は 3 つ重なっている。**
+
+1. **エラーが例外ではない。** GDAL が stderr にメッセージを出すだけで、処理は続く
+2. **assert がメタデータを見ていない。** 唯一の検査対象は科学データ（`HHHH`）で、
+   ② で壊れた層は ③ でも ④ でも読まれない
+3. **`tests/` 全体で `referenceTerrainHeight` の出現が 0 回**（→ 検査するテストが存在しない）
+
+**エラーが 4 回出る内訳も、この構造で説明がつく。**
+`geocode_modes` が `interp` と `area` の 2 つ、`apply_noise_correction` が `False` と `True` の 2 つ。
+→ ② が **2 × 2 = 4 回**呼ばれ、1 回につき 1 個のエラーが出る。
+
 ### 出力レイヤの状態
 
 | 対象 | 有効画素 |
