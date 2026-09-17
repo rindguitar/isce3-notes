@@ -17,9 +17,10 @@ would still produce NaN even if the RSLC contained real terrain heights.
 
 ### What I observe
 
-Reproduced with the bundled test data only — no NISAR data needed. The build is
-23f99329d; `BaseL2WriterSingleInput.py` is byte-identical at the current `develop`
-(67bccb0ce), and has not changed since 07a033f4 (2025-05-15):
+Reproduced with the bundled test data only — no NISAR data needed. The condition
+below is the only thing that matters here, and `git log -S` shows it has not been
+touched since it was introduced in 07a033f4 (2025-05-15) — it is identical in the
+current `develop` (828ab91a3):
 
 ```console
 $ ctest -R '^test\.python\.pkg\.nisar\.workflows\.gcov$' -V

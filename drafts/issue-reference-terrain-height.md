@@ -26,8 +26,9 @@ fixing #165 would not change the outcome here: the geocoded layer would still be
 
 ## Version
 
-Reproduced on `develop` @ 23f99329d (0.26.0-dev), and the code in question is
-unchanged in the current `develop` @ 67bccb0ce. It has not been touched since
+Reproduced on `develop` @ 23f99329d (0.26.0-dev). The condition in question is
+identical in the current `develop` @ 828ab91a3 — `git log -S` shows it has been
+touched by exactly one commit, the one that introduced it. It has not been touched since
 07a033f4 (2025-05-15, "Update GCOV & GSLC writer to geocode 1-D LUTs").
 
 ## Symptom
@@ -69,7 +70,7 @@ The same happens in the GSLC workflow test, which shares this base class.
 
 ## Cause
 
-`python/packages/nisar/products/writers/BaseL2WriterSingleInput.py` (lines 1909-1917):
+`python/packages/nisar/products/writers/BaseL2WriterSingleInput.py` (lines 1929-1937 as of 828ab91a3):
 
 ```python
 # The `referenceTerrainHeight` LUT can be either a 1-D LUT (along
