@@ -83,8 +83,7 @@ referenceTerrainHeight : ndim=1  shape=(80,)
 ```bash
 conda activate isce3
 
-# 例（この環境の場合）
-ctest --test-dir ~/isce3-build \
+ctest --test-dir <ビルドディレクトリ> \
       -R '^test\.python\.pkg\.nisar\.workflows\.gcov$' --output-on-failure -V
 ```
 
@@ -121,7 +120,6 @@ Requested (11,30) of size 229x20 on raster of 80x1.       ← 4 回出る
 
 ```bash
 cd <ビルドディレクトリ>/tests/python/packages/nisar/workflows/
-# 例: cd ~/isce3-build/tests/python/packages/nisar/workflows/
 ```
 
 ```bash
@@ -174,7 +172,7 @@ gdalinfo 'HDF5:"tests/data/envisat.h5"://science/LSAR/SLC/metadata/processingInf
 | テスト出力が見つからない | 出力はテストの**作業ディレクトリ**（`<build>/tests/python/packages/nisar/workflows/`）に出ます |
 | 他のテストを `-R` で絞ったら落ちた | ctest の `DEPENDS` は**順序を決めるだけ**で前提テストを自動実行しません。<br>ただし **`workflows.gcov` に `DEPENDS` は無い**ので単独実行して問題ありません |
 | インストールが古い可能性 | `cmake --install <ビルドディレクトリ>` で揃います（C++ が未変更なら再ビルド不要） |
-| ビルドディレクトリが分からない | `find ~ -maxdepth 3 -name CMakeCache.txt` で探せます。**この環境では `~/isce3-build`** |
+| ビルドディレクトリが分からない | `find ~ -maxdepth 3 -name CMakeCache.txt` で探せます（B-1 参照） |
 | `pip install .` で入れている | **経路 B は使えません**（ビルドツリーが残らないため）。経路 A をお使いください |
 
 ---
