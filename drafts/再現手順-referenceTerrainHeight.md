@@ -71,13 +71,36 @@ referenceTerrainHeight : ndim=1  shape=(80,)
 
 ## 経路 B: ビルドがある場合（`ctest`）
 
+> ⚠️ **`pip install .` で入れた場合、この経路は使えません。**
+> `ctest` はビルドディレクトリを必要としますが、pip ではそれが残らないためです。
+> その場合は**経路 A だけ**で確認をお願いします（要点は A で確認できます）。
+
 ### B-1. GCOV のワークフローテストを実行する
+
+**`--test-dir` には、`cmake -B` で指定したビルドディレクトリ**を渡します。
+`CMakeCache.txt` が置かれている場所がそれです。
 
 ```bash
 conda activate isce3
-ctest --test-dir <ビルドディレクトリ> \
+
+# 例（この環境の場合）
+ctest --test-dir ~/isce3-build \
       -R '^test\.python\.pkg\.nisar\.workflows\.gcov$' --output-on-failure -V
 ```
+
+**自分のビルドディレクトリが分からないときは、こう探せます。**
+
+```bash
+find ~ -maxdepth 3 -name CMakeCache.txt 2>/dev/null
+# → 出てきたパスの「ディレクトリ部分」がビルドディレクトリ
+
+# そのビルドがどのソースのものかも確認できる
+grep -m1 CMAKE_HOME_DIRECTORY <ビルドディレクトリ>/CMakeCache.txt
+# → CMAKE_HOME_DIRECTORY:INTERNAL=/path/to/isce3
+```
+
+> 💡 ビルドディレクトリの中で `ctest` を直接実行してもかまいません
+> （`cd <ビルドディレクトリ> && ctest -R ...`）。`--test-dir` はそれを省く書き方です。
 
 **期待される出力:**
 
@@ -94,8 +117,12 @@ Requested (11,30) of size 229x20 on raster of 80x1.       ← 4 回出る
 
 ### B-2. 出力プロダクトを開く
 
-テストの作業ディレクトリ（`<ビルドディレクトリ>/tests/python/packages/nisar/workflows/`）
-に出力が残ります。
+テストの作業ディレクトリに出力が残ります。
+
+```bash
+cd <ビルドディレクトリ>/tests/python/packages/nisar/workflows/
+# 例: cd ~/isce3-build/tests/python/packages/nisar/workflows/
+```
 
 ```bash
 python3 - <<'PY'
@@ -146,7 +173,9 @@ gdalinfo 'HDF5:"tests/data/envisat.h5"://science/LSAR/SLC/metadata/processingInf
 | `import isce3` が通らない | 同上。activate フックが `PYTHONPATH` を通します |
 | テスト出力が見つからない | 出力はテストの**作業ディレクトリ**（`<build>/tests/python/packages/nisar/workflows/`）に出ます |
 | 他のテストを `-R` で絞ったら落ちた | ctest の `DEPENDS` は**順序を決めるだけ**で前提テストを自動実行しません。<br>ただし **`workflows.gcov` に `DEPENDS` は無い**ので単独実行して問題ありません |
-| インストールが古い可能性 | `cmake --install <build>` で揃います（C++ が未変更なら再ビルド不要） |
+| インストールが古い可能性 | `cmake --install <ビルドディレクトリ>` で揃います（C++ が未変更なら再ビルド不要） |
+| ビルドディレクトリが分からない | `find ~ -maxdepth 3 -name CMakeCache.txt` で探せます。**この環境では `~/isce3-build`** |
+| `pip install .` で入れている | **経路 B は使えません**（ビルドツリーが残らないため）。経路 A をお使いください |
 
 ---
 
