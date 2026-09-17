@@ -1,7 +1,8 @@
 # 説明用メモ — `referenceTerrainHeight` が全 NaN になる
 
 初版 2026-08-31 / **全面改訂 2026-09-16**（仕様・経緯・修正案・テストの順序を反映）。
-根拠と再現手順は `165-comment-証拠と再現手順.md`、提出文は `165-comment.md`。
+根拠は `165-comment-証拠.md`、**再現手順は `再現手順-referenceTerrainHeight.md`**、
+提出文は `165-comment.md`。
 
 ---
 

@@ -25,7 +25,7 @@
 |---|---|---|
 | ① | 仕様は「1 次元 → 2 次元」を求めている | 6 節 |
 | ② | 実データは仕様どおり 1 次元 | 2 節 A、6 節 |
-| ③ | なのに出力が全 NaN | 3 節、5 節 |
+| ③ | なのに出力が全 NaN | 5 節（手順は別文書） |
 | ④ | 判定が常に「2 次元」と答えるから | 4 節、7 節 |
 | ⑤ | テストは科学データしか見ないので気づけない | **4-2 節** |
 | ⑥ | 直し方（今も将来も同じ答えになる） | 8 節 |
@@ -202,56 +202,17 @@ JPL が生成し ASF が配布しているプロダクトを開いた（**こち
 
 ---
 
-## 3. 再現手順（第三者がそのまま実行できる）
+## 3. 再現手順 → 別文書に分離
 
-**NISAR の実データは不要。同梱テストデータだけで再現する。**
+**`drafts/再現手順-referenceTerrainHeight.md` に切り出した**（2026-09-17）。
+メンターや第三者に「手元で再現してみてほしい」と渡すための、**単独で成立する文書**。
 
-### 手順 1: GCOV のワークフローテストを実行する
+* **経路 A（ビルド不要・1 分）**: `h5py` だけでデータの次元と判定式の答えを見る
+* **経路 B（ビルドあり・10 秒）**: `ctest` を回してエラー 4 回と `0/410` を確認
+* つまずきやすい点（`conda activate` / 出力の置き場所 / `-R` と `DEPENDS`）も収録
 
-```bash
-ctest --test-dir <build> -R '^test\.python\.pkg\.nisar\.workflows\.gcov$' --output-on-failure -V
-```
+**両経路とも、書いたとおりに実行して出力が一致することを確認済み。**
 
-※ このテストに `DEPENDS` は無いので**単独実行して問題ない**
-（`-R` で絞ると前提テストが走らず落ちるものが別にあるが、これは該当しない）
-
-**観測される結果:**
-
-```
-ERROR 5: tmp9v1bgg2s.vrt, band 1: Access window out of range in RasterIO().
-Requested (11,30) of size 229x20 on raster of 80x1.      ← 4 回出る
-1/1 Test #212: test.python.pkg.nisar.workflows.gcov ...   Passed    5.64 sec
-100% tests passed
-```
-
-→ **エラーを 4 回出しながら「合格」する。終了コードは 0。**
-
-**2026-09-10 に取り直した**（ソースと完全一致したインストールで実行）。
-結果は同一: エラー 4 回・`(az. vector)` 0 回・`(rg. vector)` 4 回・出力 0/410 で合格。
-
-### 手順 2: 出力プロダクトを開く
-
-```python
-import h5py, numpy as np
-f = 'gcov_envisat_area_noise_correction_false.h5'
-with h5py.File(f) as h:
-    a = h['/science/LSAR/GCOV/metadata/processingInformation'
-          '/parameters/referenceTerrainHeight'][()]
-    print(a.shape, np.isfinite(a).sum(), 'of', a.size)
-# (10, 41) 0 of 410
-```
-
-### 手順 3（任意）: GDAL からどう見えているか確認する
-
-```bash
-gdalinfo 'HDF5:"tests/data/envisat.h5"://science/LSAR/SLC/metadata/processingInformation/parameters/referenceTerrainHeight'
-#   Size is 80, 1        ← エラー文の "raster of 80x1" と一致
-
-gdalinfo 'HDF5:"...":/.../effectiveVelocity'
-#   Size is 240, 80      ← 本物の 2 次元 LUT はこう見える
-```
-
----
 
 ## 4. 「1 次元経路に入っていない」直接証拠
 
