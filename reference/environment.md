@@ -99,6 +99,24 @@ CUDA 関連は**一切含まれていない**。
 
 ## 環境の再現手順
 
+### 公式手順のどれを選んでいるか
+
+`~/isce3/docs/buildinstall.md` には **3 通り**書かれている。
+
+| 公式の方法 | 想定読者 | 手元での採否 |
+|---|---|---|
+| `conda install -c conda-forge isce3` | **使うだけ**の人 | ❌ ソースを触るので不採用 |
+| `pip install .`（**公式の既定**） | 開発する人 | ❌ `ctest` が使えず差分ビルドも効かない |
+| **CMake 直叩き**（"Advanced" と表記） | CMake に慣れた開発者 | ✅ **これを採用** |
+
+* **依存環境（conda）は公式推奨そのもの。** 手順書が
+  **miniforge を名指し**し、`conda env create -f environment.yml` → `conda activate isce3`
+  という手順まで一致している（確認済み: 2026-09-17）
+* **ビルド方法だけ「Advanced」側を選んでいる。** 理由は `docs/decisions.md` の
+  2026-08-23 の項（`ctest` と差分ビルド）
+* ✅ **この選択は upstream の CI と同じ。** CI も micromamba + `environment.yml` で
+  環境を作り、`cmake` → `cmake --build` → `--target install` → `ctest` を回している
+
 ### 依存環境（共通）
 
 ```bash

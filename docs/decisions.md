@@ -201,3 +201,9 @@
   - `pip install -e .`（editable）— C++ の変更には結局再ビルドが必要で、解決にならない
 - 補足: 直叩きでは `ISCE3_FETCH_DEPS` の既定が **`ON`** になり、Eigen 等をネットから
   取り直して conda のものを無視する。**`OFF` の明示が必須**
+- ✅ **2026-09-17 追記: この選択は upstream の CI と同じだった。**
+  `.github/workflows/build-and-run.yml` は **micromamba + `environment.yml`** で環境を作り、
+  **`cmake` → `cmake --build` → `--target install` → `ctest`** を回している
+  （`PYTHONPATH=…/install/packages` の設定まで手元と同じ）。
+  公式手順書が `pip install .` を「開発なら」と書き、CMake を "Advanced" と呼ぶ一方で、
+  **上流自身が検証に使っているのは CMake 経路**
