@@ -11,7 +11,7 @@ upstream（`isce-framework/isce3`）へ提出する前の文面と、その根�
 |---|---|---|---|
 | [165-comment.md](165-comment.md) | #165 に「意図した挙動か」を聞くコメント | 英語 | **メンター確認待ち** |
 | [165-comment-証拠.md](165-comment-証拠.md) | 上記の根拠。環境要因を 3 通りで潰した記録と、**検証済みの修正案 2 案** | 日本語 | 完成 |
-| [再現手順-referenceTerrainHeight.md](再現手順-referenceTerrainHeight.md) | **単独で成立する再現手順。**メンターや第三者に渡す用（ビルド不要の経路つき） | 日本語 | **2026-09-17 新設** |
+| [再現手順-referenceTerrainHeight.md](再現手順-referenceTerrainHeight.md) | **単独で成立する再現手順。**メンターや第三者に渡す用（ビルド不要の経路つき） | 日本語 | **提出済み** → [notes #1](https://github.com/rindguitar/isce3-notes/issues/1) |
 | [issue-reference-terrain-height.md](issue-reference-terrain-height.md) | 新規 issue の本文（#165 の返答を見てから出す） | 英語 | **保留（#165 の返答待ち）** |
 | [issue-reference-terrain-height-説明.md](issue-reference-terrain-height-説明.md) | 説明用。**①〜⑥ の説明順**に並べ替え、メンターの宿題 3 点への回答つき | 日本語 | **2026-09-16 全面改訂** |
 
