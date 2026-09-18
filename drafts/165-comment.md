@@ -18,9 +18,10 @@ would still produce NaN even if the RSLC contained real terrain heights.
 ### What I observe
 
 Reproduced with the bundled test data only — no NISAR data needed. The condition
-below is the only thing that matters here, and `git log -S` shows it has not been
-touched since it was introduced in 07a033f4 (2025-05-15) — it is identical in the
-current `develop` (828ab91a3):
+below is the only thing that matters here. It is identical in the current `develop`
+(828ab91a3): `git log -S` on the condition text returns only the commit that
+introduced it (07a033f4, 2025-05-15), and `git blame` attributes the current lines to
+that same commit:
 
 ```console
 $ ctest -R '^test\.python\.pkg\.nisar\.workflows\.gcov$' -V

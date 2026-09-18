@@ -27,8 +27,9 @@ fixing #165 would not change the outcome here: the geocoded layer would still be
 ## Version
 
 Reproduced on `develop` @ 23f99329d (0.26.0-dev). The condition in question is
-identical in the current `develop` @ 828ab91a3 — `git log -S` shows it has been
-touched by exactly one commit, the one that introduced it. It has not been touched since
+identical in the current `develop` @ 828ab91a3: `git log -S` on the condition text
+returns a single commit, the one that introduced it, and `git blame` attributes the
+current lines to that same commit. It has not been touched since
 07a033f4 (2025-05-15, "Update GCOV & GSLC writer to geocode 1-D LUTs").
 
 ## Symptom
