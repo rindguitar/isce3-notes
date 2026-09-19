@@ -26,6 +26,26 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 
 ## 前回やったこと
 
+2026-09-20（4 本目）: **wiki に、今回の調査で得た「汎用知識」を還元した。**
+
+- **新規ページは作らず、既存 4 ページに追記**（→ ドキュメントマップの測り直しは不要）
+  - [プルリクエスト](https://github.com/rindguitar/isce3-notes/wiki/Pull-Request):
+    **レビューと approve**。**保護が無くても approve は使える**／保護が足すのは
+    「承認前にマージできなくする」一点だけ／`gh pr edit` は使えない／**通知が飛ぶ条件**
+  - [git の基礎](https://github.com/rindguitar/isce3-notes/wiki/Git-Basics):
+    **履歴を掘るコマンド**。🔑 **`git log -S` と `-L` は測るものが違う**
+    （実例: 同じ条件式が `-S` で 1 件、`-L` で 4 件）。
+    `git show <commit>:<path>` は復旧にも使える。
+    **`.github/` を ignore してはいけない**理由も
+  - [ビルドの全体像](https://github.com/rindguitar/isce3-notes/wiki/Build-Overview):
+    **ソース／ビルド／インストール先の 3 つの場所**（図つき）。
+    版名は configure 時に確定／**mtime は当てにならない、中身で比べる**
+  - [NISAR のプロダクト](https://github.com/rindguitar/isce3-notes/wiki/NISAR-Products):
+    **プロダクトの形は仕様 XML で決まる**。同じ名前でも場所が違えば形が違う
+- 選別の基準: **他プロジェクトでも使える知識だけ** wiki へ。
+  `referenceTerrainHeight` 固有の調査は `docs/` に置いたまま
+- 図は 1 枚追加（ビルドの 3 つの場所）。描画して交差・貫通が無いことを確認済み
+
 2026-09-20（3 本目）: **最終稿のレビューを依頼し、`drafts/` を整理した。**
 
 - 🔴 **[notes PR #2](https://github.com/rindguitar/isce3-notes/pull/2)**
