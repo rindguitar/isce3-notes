@@ -526,8 +526,7 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
    - **方針変更**: #165 とは仕組みが別なので、**別 issue を立てて #165 と相互リンク**する
      （L1 writer が値をゼロで書く件 ≠ L2 writer が 1 次元 LUT を NaN にジオコードする件）
    - 素材はそろっている
-     - 英語の原本: `drafts/issue-reference-terrain-height.md`
-       ／ 貼り付け用: `drafts/upstream-issue-paste-ready.md`
+     - 英語の本文: `drafts/upstream-issue.md`（そのまま貼れる形。**1 本だけ**）
      - 日本語対訳: `drafts/upstream-issue-日本語対訳.md`
      - 根拠: `docs/experiments.md` ／ 仕組みの説明: `docs/referenceTerrainHeight-解説.md`
      - 再現手順: `drafts/再現手順-referenceTerrainHeight.md`（[notes #1](https://github.com/rindguitar/isce3-notes/issues/1) に投稿済み）

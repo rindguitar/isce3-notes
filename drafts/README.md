@@ -12,11 +12,9 @@ upstream（`isce-framework/isce3`）へ提出する前の文面と、その根�
 
 | ファイル | 用途 | 言語 | 状態 |
 |---|---|---|---|
-| [issue-reference-terrain-height.md](issue-reference-terrain-height.md) | **upstream に立てる issue の原本。**編集はここで行う | 英語 | **レビュー中**（[PR #2](https://github.com/rindguitar/isce3-notes/pull/2)） |
-| [upstream-issue-paste-ready.md](upstream-issue-paste-ready.md) | 上を**そのまま貼れる形**にしたもの（自動生成） | 英語 | 同上 |
+| [upstream-issue.md](upstream-issue.md) | **upstream に立てる issue の本文。**そのまま貼れる形 | 英語 | **レビュー中**（[PR #2](https://github.com/rindguitar/isce3-notes/pull/2)） |
 | [upstream-issue-日本語対訳.md](upstream-issue-日本語対訳.md) | 対訳と**各節の意図**。投稿しない（確認・説明用） | 日本語 | 同上 |
 | [再現手順-referenceTerrainHeight.md](再現手順-referenceTerrainHeight.md) | 単独で成立する再現手順 | 日本語 | **投稿済み** → [notes #1](https://github.com/rindguitar/isce3-notes/issues/1) |
-| [regen-paste-ready.py](regen-paste-ready.py) | 貼り付け用を原本から作り直すスクリプト | — | — |
 
 ⚠️ **`再現手順` はローカルの方が新しい**（テスト番号の注記を後から追加）。
 issue #1 の本文を更新するか、次に渡すときに気をつけること。
@@ -30,16 +28,6 @@ issue #1 の本文を更新するか、次に渡すときに気をつけるこ�
 
 進め方は **#165 にコメント → 返答を見て新規 issue → PR** の順。
 いきなり起票しないのは、既知・低優先度である可能性を否定できないため。
-
-## 貼り付け用ファイルの再生成
-
-`upstream-issue-paste-ready.md` は `issue-reference-terrain-height.md` から
-足場（HTML コメント・`# Title` / `# Body`）を外しただけのもの。
-**編集は必ず元ファイル側で行い、こちらは作り直す。**
-
-```bash
-python3 drafts/regen-paste-ready.py
-```
 
 ## 運用ルール
 

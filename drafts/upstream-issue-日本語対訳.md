@@ -1,6 +1,6 @@
 # upstream 起票用 issue — 日本語対訳と、各節の意図
 
-対象: `drafts/issue-reference-terrain-height.md`（英語・220 行）
+対象: `drafts/upstream-issue.md`（英語）
 用途: **投稿前に自分で内容を確認し、メンターに説明するため。**この文書は投稿しない。
 
 ---
