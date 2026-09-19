@@ -209,7 +209,14 @@ ISCE3 = NASA JPL の InSAR / SAR 処理ライブラリ。C++/CUDA のコア + Py
   upstream へ出す文面が固まったら PR にし、**approve を待ってから merge → 投稿**する
   - **PR に載せるのはレビュー対象の文面だけ。** 設定・整理・記録は混ぜない
   - `drafts/` の**推敲や整理は `main` に直接コミットしてよい**（承認が要るのは提出直前だけ）
-  - `.github/CODEOWNERS` に `/drafts/` を登録済み。PR を出すと自動でレビュー依頼が飛ぶ
+  - PR を出したら**レビュアーにメンターを追加する**。
+    ⚠️ `gh pr edit` は使えない（Projects classic 廃止で GraphQL エラー）ので `gh api` を使う:
+
+    ```bash
+    gh api repos/rindguitar/isce3-notes/pulls/<n>/requested_reviewers \
+      -X POST -f 'reviewers[]=s-sasaki-earthsea-wizard'
+    ```
+
   - ⚠️ `main` は保護していないため**仕組みでは止まらない**。**勝手に merge しないこと**
 * コミットメッセージは日本語。接頭辞を付ける: `feat:` / `fix:` / `docs:` / `refactor:`
 * `logs/` は `YYYY-MM-DD-<題名>.md`。**追記のみ。過去のログを後から修正しない**
