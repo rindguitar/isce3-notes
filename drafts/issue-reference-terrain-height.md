@@ -116,7 +116,8 @@ The code then reads the 1-D dataset as if it were a 2-D raster of
 
 ## Why this was not caught
 
-`referenceTerrainHeight` does not appear anywhere under `tests/` (zero occurrences).
+`referenceTerrainHeight` does not appear anywhere in the test **code** under `tests/`
+(it does appear inside 11 `.h5` fixtures, but nothing asserts on it).
 The other 1-D path added in the same change — the range-varying crosstalk LUTs — is
 covered by `tests/python/packages/nisar/workflows/gcov.py`, and that path works.
 

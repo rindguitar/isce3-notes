@@ -201,7 +201,8 @@ flowchart TB
 
 1. **エラーが例外ではない。** GDAL が stderr に出すだけで処理は続く
 2. **assert がメタデータを見ていない。** ②で壊れた層は③でも④でも読まれない
-3. **`tests/` 全体で `referenceTerrainHeight` の出現が 0 回。** 検査するテストが無い
+3. **テストコードに `referenceTerrainHeight` の出現が 0 回。** 検査するテストが無い
+   （`.h5` フィクスチャには 11 件含まれている。**データはあるのに検査が無い**）
 
 **エラーが 4 回出る内訳もこれで説明がつく。**
 `geocode_modes`（`interp` / `area`）× `apply_noise_correction`（`False` / `True`）

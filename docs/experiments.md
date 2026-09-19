@@ -139,7 +139,7 @@ effectiveVelocity      → Size is 240, 80    ← 本物の 2 次元 LUT
 | `Access window out of range` エラー | **4 回** |
 | 1 次元経路の警告 `(az. vector)` | **0 回** ← 一度も入っていない |
 | 同じ PR で入った `(rg. vector)` | **4 回**（crosstalk。こちらは動く） |
-| `tests/` 内の `referenceTerrainHeight` 出現回数 | **0**（検証しているテストが無い） |
+| テストコード内の `referenceTerrainHeight` 出現回数 | **0**（`.h5` フィクスチャには 11 件。検証だけが無い） |
 
 ### なぜエラーが出てもテストが通るのか（テストの順序）
 
@@ -159,7 +159,8 @@ effectiveVelocity      → Size is 240, 80    ← 本物の 2 次元 LUT
 1. **エラーが例外ではない。** GDAL が stderr にメッセージを出すだけで、処理は続く
 2. **assert がメタデータを見ていない。** 唯一の検査対象は科学データ（`HHHH`）で、
    ② で壊れた層は ③ でも ④ でも読まれない
-3. **`tests/` 全体で `referenceTerrainHeight` の出現が 0 回**（→ 検査するテストが存在しない）
+3. **テストコードに `referenceTerrainHeight` の出現が 0 回**（→ 検査するテストが存在しない）。
+   `.h5` フィクスチャには 11 件あるので、**データはあるのに検査だけが無い**
 
 **エラーが 4 回出る内訳も、この構造で説明がつく。**
 `geocode_modes` が `interp` と `area` の 2 つ、`apply_noise_correction` が `False` と `True` の 2 つ。
@@ -294,7 +295,7 @@ A と B の差は**両端の縁の帯**。1 次元経路が距離軸を RSLC の
 | `GDAL_MEM_ENABLE_OPEN=YES` に依存しているのでは | ✅ **外しても完全に同一**（エラー 4 回・`(az. vector)` 0 回・0/410 で合格） |
 | `slantRange` は条件付きで書かれるのでは | ✅ **無条件。**`SLC.py` の `set_parameters()` 内で `require_lut_axes()` を条件なしで呼び、
 軸は 2 次元の Doppler LUT から作られる |
-| `tests/` に検証が増えたのでは | ✅ HEAD 時点でも **出現 0 件** |
+| `tests/` に検証が増えたのでは | ✅ HEAD 時点でも**テストコードには 0 件**（`.h5` フィクスチャには 11 件） |
 | 影響範囲はどこまでか | ✅ `BaseL2WriterSingleInput` を継承するのは **`GcovWriter` と `GslcWriter` の 2 つだけ** |
 
 🔴 **製品仕様 XML に定義があった**（`python/packages/nisar/products/XML/L2/nisar_L2_GCOV.xml:2654`）。
