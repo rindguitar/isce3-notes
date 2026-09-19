@@ -8,6 +8,17 @@ GCOV/GSLC: geocoded `referenceTerrainHeight` is entirely NaN because a 1-D LUT i
 
 # Body
 
+## First — is this known, or is it intentional?
+
+Before the details: **is this already known, or is the current behaviour intended?**
+For instance, the values are the placeholder zeros of #165 today, and the comment in
+the code says the LUT is expected to become 2-D in the future — so it is possible that
+the 1-D case is knowingly left as it is for now.
+
+If that is the case, please just say so and feel free to close this. I could not find
+any public record of it, which is the main reason I am writing it up; the rest of this
+report is what I found, in case it is useful.
+
 ## Summary
 
 In GCOV and GSLC products, the geocoded layer
@@ -215,6 +226,4 @@ I have not yet run the full ctest suite with the change.
 I am happy to open a PR along these lines, together with a regression test asserting
 that the geocoded layer contains valid values — there is currently no test covering
 this dataset. Please let me know if you would prefer a different treatment of the axis
-handling, or if this is already known and accepted for the time being (for instance
-because the values are the placeholder zeros of #165 and the LUT is expected to become
-2-D anyway) — in that case feel free to close this.
+handling.
