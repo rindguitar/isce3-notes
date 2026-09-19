@@ -155,18 +155,6 @@ LUT_1D_AZ_DATASETS = ['referenceTerrainHeight']
 The code then reads the 1-D dataset as a 2-D raster of
 `len(zeroDopplerTime) x len(slantRange)`, which is what the GDAL error reports.
 
-## Why this was not caught
-
-* **The failure is not an exception.** GDAL prints to stderr and processing continues,
-  so the workflow exits 0 with the layer left at its NaN fill value.
-* **Nothing asserts on the layer.** The errors are emitted inside
-  `GcovWriter.populate_metadata()`, while the test's only assertion compares the
-  science data (`grids/frequencyA/HHHH`) against the noise power from the RSLC.
-* **No test covers this dataset.** `referenceTerrainHeight` does not appear in the
-  test *code* under `tests/` at all (it is present inside 11 `.h5` fixtures, but
-  nothing checks it). The sibling 1-D path added in the same change — the
-  range-varying crosstalk LUTs — *is* covered, and that path works.
-
 ## Impact
 
 Observed on two NISAR L2 scenes with entirely different acquisition and processing
@@ -225,5 +213,5 @@ I have not yet run the full ctest suite with the change.
 
 I am happy to open a PR along these lines, together with a regression test asserting
 that the geocoded layer contains valid values — there is currently no test covering
-this dataset. Please let me know if you would prefer a different treatment of the axis
+this dataset (it appears in 11 `.h5` fixtures, but nothing asserts on it). Please let me know if you would prefer a different treatment of the axis
 handling.
