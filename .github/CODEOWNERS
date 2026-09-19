@@ -1,0 +1,7 @@
+# upstream（他者のリポジトリ）へ出す文面は、メンターのレビューを経てから投稿する。
+# drafts/ を含む PR を出すと、ここの指定で自動的にレビュー依頼が飛ぶ。
+#
+# ⚠️ main はブランチ保護していないので、この指定は merge をブロックしない。
+#    「approve を待ってから merge する」のは運用ルール（CLAUDE.md の Git 規約）。
+
+/drafts/  @s-sasaki-earthsea-wizard

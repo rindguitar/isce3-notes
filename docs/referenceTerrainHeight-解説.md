@@ -1,8 +1,9 @@
 # 説明用メモ — `referenceTerrainHeight` が全 NaN になる
 
 初版 2026-08-31 / **全面改訂 2026-09-16**（仕様・経緯・修正案・テストの順序を反映）。
-根拠は `165-comment-証拠.md`、**再現手順は `再現手順-referenceTerrainHeight.md`**、
-提出文は `165-comment.md`。
+根拠は `docs/experiments.md`、**再現手順は `drafts/再現手順-referenceTerrainHeight.md`**
+（[notes #1](https://github.com/rindguitar/isce3-notes/issues/1) に投稿済み）、
+upstream に出す本文は `drafts/issue-reference-terrain-height.md`。
 
 ---
 

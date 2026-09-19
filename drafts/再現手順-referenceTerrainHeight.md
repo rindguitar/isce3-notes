@@ -195,8 +195,8 @@ ASF が配布している公式 GCOV プロダクトでも同じレイヤが全 
 
 ## もっと詳しい根拠
 
-* **証拠のすべて**: `drafts/165-comment-証拠.md`
+* **証拠のすべて**: `docs/experiments.md`
   （環境要因を 3 通りで潰した記録、経緯、修正案 A / B の実測）
-* **仕組みの説明**: `drafts/issue-reference-terrain-height-説明.md`（①〜⑥ の順）
+* **仕組みの説明**: `docs/referenceTerrainHeight-解説.md`（①〜⑥ の順）
 * **概念**: wiki の
   [参照地形高](https://github.com/rindguitar/isce3-notes/wiki/Reference-Terrain-Height)

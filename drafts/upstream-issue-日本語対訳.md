@@ -177,7 +177,7 @@ Requested (0,0) of size 105x31 on raster of 31x1.
 
 **落としたのは 1 点だけ**: 「テストの assert が科学データしか見ていない」という仕組みの説明。
 これは**相手のテスト設計の話**なので、issue には要らないと判断した。
-（`165-comment-証拠.md` の 4-2 節と説明メモには残してある。
+（`docs/experiments.md` の §5 と `docs/referenceTerrainHeight-解説.md` には残してある。
 メンターの宿題への回答だったので、記録としては保持する）
 
 ---

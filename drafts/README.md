@@ -7,14 +7,19 @@ upstream（`isce-framework/isce3`）へ提出する前の文面と、その根�
 
 ## 一覧
 
-| 下書き | 用途 | 言語 | 状態 |
+**このディレクトリは「upstream へ出すもの」だけを置く。**
+根拠は `docs/experiments.md`、仕組みの説明は `docs/referenceTerrainHeight-解説.md`。
+
+| ファイル | 用途 | 言語 | 状態 |
 |---|---|---|---|
-| [165-comment.md](165-comment.md) | #165 に「意図した挙動か」を聞くコメント | 英語 | **メンター確認待ち** |
-| [165-comment-証拠.md](165-comment-証拠.md) | 上記の根拠。環境要因を 3 通りで潰した記録と、**検証済みの修正案 2 案** | 日本語 | 完成 |
-| [再現手順-referenceTerrainHeight.md](再現手順-referenceTerrainHeight.md) | **単独で成立する再現手順。**メンターや第三者に渡す用（ビルド不要の経路つき） | 日本語 | **提出済み** → [notes #1](https://github.com/rindguitar/isce3-notes/issues/1) |
-| [issue-reference-terrain-height.md](issue-reference-terrain-height.md) | **upstream に立てる issue の本文**（単独の issue として整えた） | 英語 | **メンターのレビュー待ち** |
-| [upstream-issue-日本語対訳.md](upstream-issue-日本語対訳.md) | 上記の**日本語対訳と各節の意図**。投稿しない（確認・説明用） | 日本語 | **2026-09-20 新設** |
-| [issue-reference-terrain-height-説明.md](issue-reference-terrain-height-説明.md) | 説明用。**①〜⑥ の説明順**に並べ替え、メンターの宿題 3 点への回答つき | 日本語 | **2026-09-16 全面改訂** |
+| [issue-reference-terrain-height.md](issue-reference-terrain-height.md) | **upstream に立てる issue の原本。**編集はここで行う | 英語 | **レビュー中**（[PR #2](https://github.com/rindguitar/isce3-notes/pull/2)） |
+| [upstream-issue-paste-ready.md](upstream-issue-paste-ready.md) | 上を**そのまま貼れる形**にしたもの（自動生成） | 英語 | 同上 |
+| [upstream-issue-日本語対訳.md](upstream-issue-日本語対訳.md) | 対訳と**各節の意図**。投稿しない（確認・説明用） | 日本語 | 同上 |
+| [再現手順-referenceTerrainHeight.md](再現手順-referenceTerrainHeight.md) | 単独で成立する再現手順 | 日本語 | **投稿済み** → [notes #1](https://github.com/rindguitar/isce3-notes/issues/1) |
+| [regen-paste-ready.py](regen-paste-ready.py) | 貼り付け用を原本から作り直すスクリプト | — | — |
+
+⚠️ **`再現手順` はローカルの方が新しい**（テスト番号の注記を後から追加）。
+issue #1 の本文を更新するか、次に渡すときに気をつけること。
 
 ## 扱っている案件
 
@@ -26,8 +31,20 @@ upstream（`isce-framework/isce3`）へ提出する前の文面と、その根�
 進め方は **#165 にコメント → 返答を見て新規 issue → PR** の順。
 いきなり起票しないのは、既知・低優先度である可能性を否定できないため。
 
+## 貼り付け用ファイルの再生成
+
+`upstream-issue-paste-ready.md` は `issue-reference-terrain-height.md` から
+足場（HTML コメント・`# Title` / `# Body`）を外しただけのもの。
+**編集は必ず元ファイル側で行い、こちらは作り直す。**
+
+```bash
+python3 drafts/regen-paste-ready.py
+```
+
 ## 運用ルール
 
+- 🔴 **提出直前に PR を立て、メンターの approve を待ってから merge → 投稿する。**
+  **PR に載せるのはレビュー対象の文面だけ**（推敲や整理は `main` に直接コミットしてよい）
 - **upstream に出す文面は英語。** 日本語の説明メモは別ファイルに分ける
 - 公開の場に書く主張は、**実物で裏を取ってから**書く（推測で書かない）
 - 「言えないこと」も文書に明記する。検証の範囲を超えた主張をしない
