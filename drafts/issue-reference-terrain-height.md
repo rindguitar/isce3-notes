@@ -211,7 +211,10 @@ errors but covers a narrower range extent (134/410), because the 1-D branch rebu
 the range axis from the RSLC radar grid instead of using the axis already in the group.
 I have not yet run the full ctest suite with the change.
 
-I am happy to open a PR along these lines, together with a regression test asserting
-that the geocoded layer contains valid values — there is currently no test covering
-this dataset (it appears in 11 `.h5` fixtures, but nothing asserts on it). Please let me know if you would prefer a different treatment of the axis
-handling.
+If this analysis looks right to you, **may I open a PR along these lines?** It would
+also add a regression test asserting that the geocoded layer contains valid values —
+there is currently no test covering this dataset (it appears in 11 `.h5` fixtures, but
+nothing asserts on it).
+
+I am equally happy to leave the fix to you, or to follow a different treatment of the
+axis handling if you have one in mind.
