@@ -26,6 +26,26 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 
 ## 前回やったこと
 
+2026-09-20（3 本目）: **`drafts/` の変更を PR 経由にし、最終稿のレビューを依頼した。**
+
+- 🔴 **[notes PR #2](https://github.com/rindguitar/isce3-notes/pull/2)**
+  「upstream に立てる issue の最終稿 — レビューのお願い」（+279/-1、5 ファイル）
+  - **approve をもらってから merge → その後 upstream へ投稿**する
+  - PR の説明に**判断をお願いしたい 4 点**をチェックリストで置いた
+    （クレジット表記／配布物への言及／issue 先行か PR 同時か／フル ctest）
+- 仕組み側
+  - `.github/CODEOWNERS` に `/drafts/ @s-sasaki-earthsea-wizard` を登録
+  - `CLAUDE.md` の Git 規約に **「`drafts/` の変更は PR。approve を待って merge」** を明記
+  - `drafts/upstream-issue-paste-ready.md`（そのまま貼る版）と
+    `drafts/regen-paste-ready.py`（再生成スクリプト）を用意
+- ⚠️ **落とし穴を 2 つ踏んだ**
+  1. **CODEOWNERS は base ブランチ（`main`）から読まれる。**
+     この PR 自体では効かないので**手動でレビュー依頼した**。次の PR からは自動
+  2. **`gh pr edit` も Projects classic の影響で失敗する**（`gh issue view` と同根）。
+     `gh api .../requested_reviewers -X POST` で回避した
+- ⚠️ **`main` はブランチ保護しない**と決めた（日常の記録が PR 必須になると滞るため）。
+  **approve を待つのは運用ルール**。仕組みでは止まらない
+
 2026-09-20（2 本目）: **upstream 起票用の issue を整え、日本語対訳を用意した。**
 
 - `drafts/issue-reference-terrain-height.md` を**単独の issue として全面改訂**（185 → 220 行）
@@ -561,7 +581,9 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 - **open PR 65 件。最古は 2024-11 の #27（約 21 か月）。** コア開発者 gshiroma だけで 17 件 open
 - ボトルネックはレビュー能力。**内部の人の PR も 1 年以上待たされている**
 - issue はラベル運用されていない（open 97 件中 94 件が無ラベル）
-- ⚠️ **`gh issue view` は使えない**（Projects classic 廃止で GraphQL エラー）。`gh api` を使う
+- ⚠️ **`gh issue view` と `gh pr edit` は使えない**（Projects classic 廃止で GraphQL エラー）。
+  **`gh api` を使う**（例: レビュー依頼は
+  `gh api repos/<owner>/<repo>/pulls/<n>/requested_reviewers -X POST -f 'reviewers[]=<user>'`）
 
 ## 未解決・保留中の問題
 
