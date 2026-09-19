@@ -26,6 +26,32 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 
 ## 前回やったこと
 
+2026-09-20（3 本目）: **最終稿のレビューを依頼し、`drafts/` を整理した。**
+
+- 🔴 **[notes PR #2](https://github.com/rindguitar/isce3-notes/pull/2)**
+  「upstream に立てる issue の最終稿 — レビューのお願い」
+  - **approve をもらってから merge → その後 upstream へ投稿**する
+  - PR の説明に**判断をお願いしたい 4 点**（クレジット表記／配布物への言及／
+    issue 先行か PR 同時か／フル ctest）
+  - ⚠️ **PR に載せるのはレビュー対象の文面だけ**にした（`drafts/upstream-issue.md` 1 本）。
+    設定・整理・記録は `main` へ直接
+- **`drafts/` を「upstream へ出すもの」だけに整理**
+  - 削除: `165-comment.md`（役目終了）、`165-comment-証拠.md`
+    （中身は `docs/experiments.md` と `reference/environment.md` に残存を確認）
+  - 移動: 説明メモ → **`docs/referenceTerrainHeight-解説.md`**（提出物ではないため）
+  - **本文を 1 ファイルに統合**。原本と貼り付け用で**本文が完全に重複**していたため、
+    `upstream-issue.md` 1 本にし、再生成スクリプトも削除
+- ⚠️ **`main` はブランチ保護しない**と決めた（日常の記録が PR 必須になると滞る）。
+  **approve を待つのは運用ルール**。仕組みでは止まらない
+- ⚠️ **CODEOWNERS は入れたが同日中に撤去した。**
+  作者 1 人・レビュアー 1 人・PR は提出直前だけ、という状況では
+  **レビュアーを手動で追加すれば足りる**（しかも base ブランチから読まれるので初回は効かない）
+- 💡 **`gh pr edit` も Projects classic の影響で失敗する**（`gh issue view` と同根）。
+  レビュー依頼は `gh api .../requested_reviewers -X POST` を使う（`CLAUDE.md` に記録）
+- ⚠️ **自分のミス: `git checkout <branch> -- docs/STATUS.md` で `main` の新しい記録を上書きした。**
+  `git show <commit>:<path>` で復旧。**ブランチから特定ファイルを持ってくるときは、
+  そのファイルが `main` 側で先に進んでいないか確認する**
+
 2026-09-20（2 本目）: **upstream 起票用の issue を整え、日本語対訳を用意した。**
 
 - `drafts/issue-reference-terrain-height.md` を**単独の issue として全面改訂**（185 → 220 行）
