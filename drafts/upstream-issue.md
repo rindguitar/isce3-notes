@@ -1,5 +1,6 @@
 <!-- upstream (isce-framework/isce3) に立てる issue の本文。
-     下の Title と Body をそのまま貼る。編集はこのファイルで行う。 -->
+     下の Title と Body をそのまま貼る。編集はこのファイルで行う。
+     2026-09-23 改訂: notes PR #2 のレビュー指摘 1〜5 を反映。 -->
 
 ## Title（issue のタイトル欄に入れる）
 
@@ -9,24 +10,13 @@ GCOV/GSLC: geocoded `referenceTerrainHeight` is entirely NaN because a 1-D LUT i
 
 ## Body（issue の本文欄に入れる。ここから下をそのまま貼る）
 
-## First — is this known, or is it intentional?
-
-Before the details: **is this already known, or is the current behaviour intended?**
-For instance, the values are the placeholder zeros of #165 today, and the comment in
-the code says the LUT is expected to become 2-D in the future — so it is possible that
-the 1-D case is knowingly left as it is for now.
-
-If that is the case, please just say so and feel free to close this. I could not find
-any public record of it, which is the main reason I am writing it up; the rest of this
-report is what I found, in case it is useful.
-
 ## Summary
 
 In GCOV and GSLC products, the geocoded layer
 `/science/LSAR/{GCOV,GSLC}/metadata/processingInformation/parameters/referenceTerrainHeight`
 is filled entirely with NaN. The workflow still exits with status 0 and the only
 visible symptom is a GDAL error on stderr, so it is easy to miss — the layer is
-all-NaN in delivered products as well.
+all-NaN in products distributed via the ASF DAAC as well.
 
 The cause is in `BaseL2WriterSingleInput.geocode_metadata_group()` (reached via
 `geocode_lut()`): the rank of the LUT is inferred from the presence of a sibling
@@ -42,44 +32,111 @@ genuinely 2-D LUTs in the same group. The RSLC writer always creates it, so the
 | Symptom | values are all **zero** | values are all **NaN** |
 | Cause | the RSLC writer fills a placeholder vector of zeros | the L2 writer misdetects the rank when geocoding |
 
-Fixing #165 would not change the outcome here: with real terrain heights in the
-RSLC, the geocoded layer would still be all NaN.
+Populating the current 1-D LUT with real terrain heights would not fix the rank
+detection; the geocoded layer would still be all NaN.
+
+## Is this known or intended?
+
+The values are still the placeholder zeros of #165, and the comment in the code says
+the LUT is expected to become 2-D in the future. If the 1-D case is already tracked
+somewhere, a pointer is all I need — I could not find a public record of it, which is
+the main reason for writing this up.
 
 ## Versions
 
-* Reproduced on `develop` @ 23f99329d (0.26.0-dev).
-* **Independently reproduced by a colleague on `develop` @ 0c775d7ae** (a different
-  machine, Docker + micromamba, GDAL 3.12.3, Python 3.13) — every observation below
-  matched, including the error text and the pixel counts.
-* The condition itself is unchanged: `git log -S` on the condition text returns only
-  the commit that introduced it (07a033f4, 2025-05-15, *"Update GCOV & GSLC writer to
-  geocode 1-D LUTs"*), and `git blame` attributes the current lines to that commit.
+* Reproduced on `develop` @ `0c775d7ae` (0.26.0-dev).
+* **Independently reproduced by a colleague** on the same commit, on a different
+  machine (Docker + micromamba, GDAL 3.12.3). The unmodified-fixture observations
+  matched — error text, `(az. vector)` count, and the pixel counts below. Details:
+  https://github.com/rindguitar/isce3-notes/issues/1#issuecomment-5738541714
+* The condition itself is unchanged since it was introduced in 07a033f4 (2025-05-15,
+  *"Update GCOV & GSLC writer to geocode 1-D LUTs"*):
+
+  ```console
+  $ git log -S 'slant_range_path not in' -- python/packages/nisar/products/writers/BaseL2WriterSingleInput.py
+  07a033f4 Update GCOV & GSLC writer to geocode 1-D LUTs
+  ```
+
+  `git blame` attributes the current lines to the same commit, and the condition is
+  still present at `507208508` (today's `develop`).
 
 ## Symptom
 
 ```
-ERROR 5: tmp7acypfvt.vrt, band 1: Access window out of range in RasterIO().
-Requested (0,0) of size 105x31 on raster of 31x1.
-In isce3::io::Raster::get/setValue() - error in RasterIO.
+ERROR 5: tmpXXXXXXXX.vrt, band 1: Access window out of range in RasterIO().
+Requested (11,30) of size 229x20 on raster of 80x1.
 ```
 
-The requested window is `len(slantRange) x len(zeroDopplerTime)`; the actual raster
-(`31 x 1`) is the 1-D `referenceTerrainHeight` opened as an image.
+The reader assumes a `len(zeroDopplerTime) x len(slantRange)` raster and requests
+blocks of it (`11 + 229 = 240 = len(slantRange)`); the actual raster is the 1-D
+`referenceTerrainHeight` opened as an image, `80 x 1`.
 
 ## Reproduction
 
 No NISAR data is required — the bundled test data reproduces it.
+The first check needs no build and shows the misdetection itself; the second runs the
+workflow test and shows the resulting all-NaN layer.
+
+### The misdetection itself (h5py only, no build)
+
+From the repository root:
+
+```python
+import h5py
+
+G = '/science/LSAR/SLC/metadata/processingInformation/parameters'
+with h5py.File('tests/data/envisat.h5', 'r') as f:
+    d = f[f'{G}/referenceTerrainHeight']
+    print(d.ndim, d.shape)            # 1 (80,)
+    print(f'{G}/slantRange' in f)     # True  -> the writer's condition below is False
+
+    # the condition, copied from BaseL2WriterSingleInput.py
+    LUT_1D_AZ_DATASETS = ['referenceTerrainHeight']
+    flag_luts_are_1d_az = (all(v in LUT_1D_AZ_DATASETS for v in ['referenceTerrainHeight'])
+                           and f'{G}/slantRange' not in f)
+    print(flag_luts_are_1d_az)        # False -> the 1-D dataset is treated as 2-D
+```
+
+GDAL sees the same thing — the 1-D dataset opens as an 80x1 image, the genuine 2-D LUT
+next to it as 240x80 (GDAL prints width, height):
 
 ```console
-$ ctest --test-dir <build> -R '^test\.python\.pkg\.nisar\.workflows\.gcov$' --output-on-failure
-ERROR 5: ..., band 1: Access window out of range in RasterIO().   # printed 4 times
+$ P=science/LSAR/SLC/metadata/processingInformation/parameters
+$ gdalinfo "HDF5:\"tests/data/envisat.h5\"://$P/referenceTerrainHeight" | grep 'Size is'
+Size is 80, 1
+$ gdalinfo "HDF5:\"tests/data/envisat.h5\"://$P/effectiveVelocity" | grep 'Size is'
+Size is 240, 80
+```
+
+### The all-NaN layer (ctest)
+
+`-V` is required: the test passes, and CTest hides a passing test's output otherwise.
+
+```console
+$ ctest --test-dir <build> -R '^test\.python\.pkg\.nisar\.workflows\.gcov$' \
+        --output-on-failure -V --no-tests=error
+ERROR 5: tmpXXXXXXXX.vrt, band 1: Access window out of range in RasterIO().
+Requested (11,30) of size 229x20 on raster of 80x1.        # printed 4 times
 ...
 100% tests passed
 ```
 
 The test **passes** while emitting the error four times (2 geocode modes x 2
-noise-correction settings). Inspecting the product it just wrote, on the metadata
-geogrid `(10, 41)`:
+noise-correction settings). The products it wrote are left in
+`<build>/tests/python/packages/nisar/workflows/`; counting finite pixels on the
+metadata geogrid `(10, 41)`:
+
+```python
+import h5py, numpy as np
+
+M = '/science/LSAR/GCOV/metadata'
+with h5py.File('gcov_envisat_area_noise_correction_false.h5', 'r') as h:
+    a = h[f'{M}/processingInformation/parameters/referenceTerrainHeight'][()]
+    print(a.shape, int(np.isfinite(a).sum()), a.size)          # (10, 41) 0 410
+    for name in ('elevationAntennaPattern', 'noiseEquivalentBackscatter'):
+        b = h[f'{M}/calibrationInformation/frequencyA/{name}/HH'][()]
+        print(name, int(np.isfinite(b).sum()), b.size)         # 178 410
+```
 
 | layer | finite pixels |
 |---|---|
@@ -87,8 +144,9 @@ geogrid `(10, 41)`:
 | `calibrationInformation/frequencyA/noiseEquivalentBackscatter/HH` | 178 / 410 |
 | `processingInformation/parameters/referenceTerrainHeight` | **0 / 410** |
 
-Other layers on the same grid are populated; only this one is empty. The GSLC
-workflow test behaves the same way (it shares this base class).
+Other layers on the same grid are populated; only this one is empty. Running the same
+command with `gslc` instead of `gcov` shows the same thing in `x_out.h5` / `y_out.h5`
+(two errors, 0/410), since both writers share this base class.
 
 The 1-D azimuth branch never runs — its own warning never appears, while the
 range-vector branch added in the same change runs normally:
@@ -111,12 +169,11 @@ different shapes, so the 1-D → 2-D conversion is the documented job of this co
 The geocoded one is annotated *"Reference terrain height as a function of map
 coordinates"* with `_FillValue="nan"`, i.e. an all-NaN layer means "no valid data
 anywhere". Note that `dopplerCentroid`, which the spec gives the *same* shape, is
-populated in the delivered products while this layer is not.
+populated in the products I looked at while this layer is not.
 
 ## Cause
 
-`python/packages/nisar/products/writers/BaseL2WriterSingleInput.py`
-(lines 1929-1937 as of 828ab91a3):
+https://github.com/isce-framework/isce3/blob/0c775d7ae/python/packages/nisar/products/writers/BaseL2WriterSingleInput.py#L1944-L1952
 
 ```python
 # The `referenceTerrainHeight` LUT can be either a 1-D LUT (along
@@ -158,26 +215,29 @@ The code then reads the 1-D dataset as a 2-D raster of
 
 ## Impact
 
-Observed on two NISAR L2 scenes with entirely different acquisition and processing
-parameters (frequency A+B vs. B only, dual- vs. single-pol, 20 vs. 5 MHz, UTM vs.
-polar stereographic, 20 vs. 80 m posting, steep terrain vs. flat ice shelf) — the
-layer is all NaN in both.
+The layer is all NaN in the two NISAR L2 products I inspected, which have entirely
+different acquisition and processing parameters (frequency A+B vs. B only, dual- vs.
+single-pol, 20 vs. 5 MHz, UTM vs. polar stereographic, 20 vs. 80 m posting, steep
+terrain vs. flat ice shelf):
 
-The corresponding delivered products have an all-NaN layer as well (0 of 156,420 and
-0 of 111,531 finite values), both produced with `softwareVersion = 0.25.16`:
+| granule (distributed via ASF DAAC) | finite pixels | `softwareVersion` |
+|---|---|---|
+| `NISAR_L2_PR_GCOV_028_168_D_126_0005_NASV_A_20260824T211408_20260824T211412_P05023_N_P_J_001` | 0 / 156,420 | 0.25.16 |
+| `NISAR_L2_PR_GCOV_028_152_A_156_2005_DHDH_A_20260823T185248_20260823T185253_P05023_N_P_J_001` | 0 / 111,531 | 0.25.16 |
 
-```
-NISAR_L2_PR_GCOV_028_168_D_126_0005_NASV_A_20260824T211408_20260824T211412_P05023_N_P_J_001
-NISAR_L2_PR_GCOV_028_152_A_156_2005_DHDH_A_20260823T185248_20260823T185253_P05023_N_P_J_001
-```
+Their error message differs only in the array sizes
+(`Requested (0,0) of size 105x31 on raster of 31x1` for the first one), which are the
+axis lengths of those products.
 
-Only this metadata layer is affected; the science datasets are not.
+I have not looked beyond these two products, so I cannot say how general this is. In
+the GCOV and GSLC workflow tests the science datasets are unaffected — only this
+metadata layer changes.
 
 ## A candidate fix
 
 Two decisions are conflated in that single condition: **whether the values must be
 replicated along range** (a property of the dataset's rank) and **what the range axis
-should be** (whether the group has a `slantRange`). Separating them fixes it:
+should be** (whether the group has a `slantRange`). Separating them:
 
 ```python
 # the rank decides whether to tile
@@ -187,13 +247,19 @@ flag_luts_are_1d_az = (
          self.input_hdf5_obj[f'{input_h5_group_path}/{var}'].ndim == 1
          for var in input_ds_name_list]))
 
-# the presence of slantRange decides the range axis
-if slant_range_path in self.input_hdf5_obj:     # was: if not flag_luts_are_1d_az:
+# use the group's own range axis when it has one
+if not flag_luts_are_1d_az or slant_range_path in self.input_hdf5_obj:
 ```
 
-I cross-checked this against the 2-D path you already have, by rewriting
+The `not flag_luts_are_1d_az or ...` form matters: a 2-D LUT whose group has no
+`slantRange` still takes the original path and is rejected (or skipped, under
+`skip_if_not_present`) rather than silently falling back to a synthesized axis.
+So genuine 2-D input keeps its existing behaviour, and malformed input with a missing
+axis is still refused.
+
+I checked this against the 2-D path you already have, by rewriting
 `referenceTerrainHeight` in `tests/data/envisat.h5` as an `(80, 240)` array (the same
-values replicated along range) and running the code on it:
+values replicated along range) and running the code on it, at `0c775d7ae`:
 
 | input | unmodified | with the change |
 |---|---|---|
@@ -201,21 +267,14 @@ values replicated along range) and running the code on it:
 | 2-D `(80, 240)` — the planned format | 178 / 410 | **178 / 410** |
 
 Both patched results match the unmodified 2-D run exactly (same valid-pixel mask,
-maximum absolute difference 0.0). So the change produces today what the planned 2-D
-LUT would produce later, and **leaves the 2-D case untouched**.
+maximum absolute difference 0.0). So for these inputs the change produces what the
+planned 2-D LUT would produce, and does not alter the 2-D case.
 
-Also observed with the change: the GDAL errors disappear (6 → 0 across the GCOV and
-GSLC tests), the science datasets are bit-identical, the other geocoded metadata
-layers are unchanged, the range-vector (crosstalk) path still runs as before, and both
-tests pass. Checking only the rank — without the second change — also removes the
-errors but covers a narrower range extent (134/410), because the 1-D branch rebuilds
-the range axis from the RSLC radar grid instead of using the axis already in the group.
-I have not yet run the full ctest suite with the change.
+Also observed with the change, on the bundled fixtures: the GDAL errors disappear
+(6 → 0 across the GCOV and GSLC tests), the science datasets are bit-identical, the
+other geocoded metadata layers on the same grid are unchanged, and the range-vector
+(crosstalk) path still runs as before. I have not yet run the full ctest suite with
+the change.
 
-If this analysis looks right to you, **may I open a PR along these lines?** It would
-also add a regression test asserting that the geocoded layer contains valid values —
-there is currently no test covering this dataset (it appears in 11 `.h5` fixtures, but
-nothing asserts on it).
-
-I am equally happy to leave the fix to you, or to follow a different treatment of the
-axis handling if you have one in mind.
+I can submit a focused PR with regression tests for the 1-D and 2-D cases.
+Is there an existing issue or a preferred approach for this axis handling?
