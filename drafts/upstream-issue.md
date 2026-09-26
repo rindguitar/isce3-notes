@@ -47,18 +47,19 @@ the main reason for writing this up.
 * Reproduced on `develop` @ `0c775d7ae` (0.26.0-dev).
 * **Independently reproduced by a colleague** on the same commit, on a different
   machine (Docker + micromamba, GDAL 3.12.3). The unmodified-fixture observations
-  matched — error text, `(az. vector)` count, and the pixel counts below. Details:
+  matched — error text, `(az. vector)` count, and the 0/410 and 178/410 counts from
+  the Reproduction section. Details:
   https://github.com/rindguitar/isce3-notes/issues/1#issuecomment-5738541714
-* The condition itself is unchanged since it was introduced in 07a033f4 (2025-05-15,
+* The condition itself is unchanged since it was introduced in 07a033f4f (2025-05-15,
   *"Update GCOV & GSLC writer to geocode 1-D LUTs"*):
 
   ```console
-  $ git log -S 'slant_range_path not in' -- python/packages/nisar/products/writers/BaseL2WriterSingleInput.py
-  07a033f4 Update GCOV & GSLC writer to geocode 1-D LUTs
+  $ git log --oneline -S 'slant_range_path not in' -- python/packages/nisar/products/writers/BaseL2WriterSingleInput.py
+  07a033f4f Update GCOV & GSLC writer to geocode 1-D LUTs (#2137)
   ```
 
   `git blame` attributes the current lines to the same commit, and the condition is
-  still present at `507208508` (today's `develop`).
+  still present on `develop` as of `404c0defc`.
 
 ## Symptom
 
@@ -67,9 +68,9 @@ ERROR 5: tmpXXXXXXXX.vrt, band 1: Access window out of range in RasterIO().
 Requested (11,30) of size 229x20 on raster of 80x1.
 ```
 
-The reader assumes a `len(zeroDopplerTime) x len(slantRange)` raster and requests
-blocks of it (`11 + 229 = 240 = len(slantRange)`); the actual raster is the 1-D
-`referenceTerrainHeight` opened as an image, `80 x 1`.
+The reader assumes a `len(slantRange) x len(zeroDopplerTime)` raster (width x height,
+as GDAL prints them) and requests blocks of it (`11 + 229 = 240 = len(slantRange)`);
+the actual raster is the 1-D `referenceTerrainHeight` opened as an image, `80 x 1`.
 
 ## Reproduction
 
@@ -123,8 +124,8 @@ Requested (11,30) of size 229x20 on raster of 80x1.        # printed 4 times
 
 The test **passes** while emitting the error four times (2 geocode modes x 2
 noise-correction settings). The products it wrote are left in
-`<build>/tests/python/packages/nisar/workflows/`; counting finite pixels on the
-metadata geogrid `(10, 41)`:
+`<build>/tests/python/packages/nisar/workflows/`. From that directory, counting
+finite pixels on the metadata geogrid `(10, 41)`:
 
 ```python
 import h5py, numpy as np
@@ -164,7 +165,7 @@ different shapes, so the 1-D → 2-D conversion is the documented job of this co
 | path | shape in the spec | rank |
 |---|---|---|
 | `sourceData/.../referenceTerrainHeight` | `sourceDataDopplerCentroidTimeLength` | 1-D |
-| `processingInformation/parameters/.../referenceTerrainHeight` | `dopplerCentroidShape` | 2-D |
+| `processingInformation/parameters/referenceTerrainHeight` | `dopplerCentroidShape` | 2-D |
 
 The geocoded one is annotated *"Reference terrain height as a function of map
 coordinates"* with `_FillValue="nan"`, i.e. an all-NaN layer means "no valid data
@@ -179,7 +180,8 @@ https://github.com/isce-framework/isce3/blob/0c775d7ae/python/packages/nisar/pro
 # The `referenceTerrainHeight` LUT can be either a 1-D LUT (along
 # azimuth) or a 2-D LUT. So, to determine the type of the LUT to
 # geocode, check the constant `LUT_1D_AZ_DATASETS`, but also verify if
-# `slantRange` is present within the LUT group to confirm its dimensions.
+# `slantRange` is present within the LUT group to confirm its
+# dimensions.
 slant_range_path = f'{input_h5_group_path}/slantRange'
 flag_luts_are_1d_az = (all([var in LUT_1D_AZ_DATASETS
                            for var in input_ds_name_list]) and
@@ -210,24 +212,25 @@ the comment at the top of the same file states that the 1-D case is the current 
 LUT_1D_AZ_DATASETS = ['referenceTerrainHeight']
 ```
 
-The code then reads the 1-D dataset as a 2-D raster of
-`len(zeroDopplerTime) x len(slantRange)`, which is what the GDAL error reports.
+The code then reads the 1-D dataset as if it were a
+`len(slantRange) x len(zeroDopplerTime)` raster, which is why GDAL reports requests
+outside the `80 x 1` raster it actually is.
 
 ## Impact
 
 The layer is all NaN in the two NISAR L2 products I inspected, which have entirely
-different acquisition and processing parameters (frequency A+B vs. B only, dual- vs.
-single-pol, 20 vs. 5 MHz, UTM vs. polar stereographic, 20 vs. 80 m posting, steep
-terrain vs. flat ice shelf):
+different acquisition and processing parameters (frequency B only vs. A+B, single-
+vs. dual-pol, 5 vs. 20 MHz, polar stereographic vs. UTM, 80 vs. 20 m posting, flat
+ice shelf vs. steep terrain):
 
 | granule (distributed via ASF DAAC) | finite pixels | `softwareVersion` |
 |---|---|---|
 | `NISAR_L2_PR_GCOV_028_168_D_126_0005_NASV_A_20260824T211408_20260824T211412_P05023_N_P_J_001` | 0 / 156,420 | 0.25.16 |
 | `NISAR_L2_PR_GCOV_028_152_A_156_2005_DHDH_A_20260823T185248_20260823T185253_P05023_N_P_J_001` | 0 / 111,531 | 0.25.16 |
 
-Their error message differs only in the array sizes
-(`Requested (0,0) of size 105x31 on raster of 31x1` for the first one), which are the
-axis lengths of those products.
+Reprocessing the RSLC of `028_168` locally gives the same GDAL error, only with that
+product's axis lengths (105 range x 31 azimuth samples):
+`Requested (0,0) of size 105x31 on raster of 31x1`.
 
 I have not looked beyond these two products, so I cannot say how general this is. In
 the GCOV and GSLC workflow tests the science datasets are unaffected — only this
@@ -252,10 +255,13 @@ if not flag_luts_are_1d_az or slant_range_path in self.input_hdf5_obj:
 ```
 
 The `not flag_luts_are_1d_az or ...` form matters: a 2-D LUT whose group has no
-`slantRange` still takes the original path and is rejected (or skipped, under
+`slantRange` takes the existing path and is rejected (or skipped, under
 `skip_if_not_present`) rather than silently falling back to a synthesized axis.
 So genuine 2-D input keeps its existing behaviour, and malformed input with a missing
-axis is still refused.
+axis is rejected or skipped. Among 2-D inputs, the only one handled differently is a
+`referenceTerrainHeight` without `slantRange`: the current condition misclassifies it
+as 1-D, while with the change it is rejected (or skipped) like any other 2-D LUT
+missing its axis.
 
 I checked this against the 2-D path you already have, by rewriting
 `referenceTerrainHeight` in `tests/data/envisat.h5` as an `(80, 240)` array (the same
