@@ -128,6 +128,23 @@ conda install -n isce3 'eigen<4' 'pybind11<3' ccache
 conda activate isce3
 ```
 
+### ⚠️ 環境を作った後に増えた依存（2026-09-29 確認）
+
+| 依存 | いつ増えたか | 無いとどうなるか |
+|---|---|---|
+| `whirlwind-insar>=0.10.0` | #367（2026-09-14、位相アンラッピング） | insar・bandpass_insar・ionosphere・unwrap の 4 テストが `ModuleNotFoundError: No module named 'whirlwind'` で失敗し、フル ctest が 232/237 になる |
+
+手元の環境は 2026-08-23 に作ったので入っていない。導入はユーザーが実行する。
+
+```bash
+conda activate isce3
+# まず何が変わるかを確かめる（eigen<4 と pybind11<3 の固定が崩れないこと）
+conda install -c conda-forge "whirlwind-insar>=0.10.0" "eigen<4" "pybind11<3" --dry-run
+# 問題なければ --dry-run を外して実行する
+```
+
+⚠️ upstream に追従したら、`git diff <前の SHA> <新しい SHA> -- environment.yml` で**依存の増減も確かめる**。
+
 ### 開発用ビルド（CMake 直叩き / 現在こちらを使用）
 
 ビルドディレクトリを**リポジトリの外**に置くことで `~/isce3` を汚さない。

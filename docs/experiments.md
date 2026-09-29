@@ -390,3 +390,18 @@ A と B の差は**両端の縁の帯**。1 次元経路が距離軸を RSLC の
 - **numpy 2.x での挙動**（手元は 1.26.4 なので NEP 50 系のバグが見えない）
 - **GPU (CUDA) 経路**（ビルドできないため一切触れていない）
 - **信号処理側（`focus` / `signal`）**（一度も触っていない）
+
+## 9. upstream の調査で確かめたこと（2026-09-29）
+
+- **GDAL 3.13 の古い形の GeoTransform（`double*`）は、isce3 には非推奨の警告を出さない。**
+  非推奨の印が `#if defined(GDAL_COMPILATION)`（GDAL 自身のビルド）の中にしか無い（`gdal_dataset.h`）。
+  isce3 の `Raster.cpp` を構文チェックしても警告は 0 件。#199 は今のところ実害が無い
+- **`geocode_insar` のテストは合格しながら `Dataset does not support the SetSpatialRef() method.` を 7 回出す。**
+  `IH5Dataset` が座標系の関数を実装していないため。#33 で維持者が「無害」と回答済み
+- **GSLC の `demInterpolation = 'biquintic'`（固定値）は実処理と一致する。**
+  `DEMRasterToInterpolator` の既定が `BIQUINTIC_METHOD`（`loadDem.h`）。TODO のコメントが古いだけ
+- **配布物 GCOV の `ceosAnalysisReadyData/geometricAccuracy` の NaN は既定値。**
+  `copy_from_runconfig(..., default=np.nan)` で、配布物の runconfig にも項目が無い
+- **`whirlwind-insar` が無いと insar 系 4 テストが失敗する**（`reference/environment.md` に手順）
+- nisar 系 61 テストは `-V` 付きで約 4 分（ctest の記録では約 1.5 分）
+
