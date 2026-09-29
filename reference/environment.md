@@ -176,7 +176,7 @@ cmake --install ~/isce3-build
 GDAL_MEM_ENABLE_OPEN=YES ctest --test-dir ~/isce3-build --output-on-failure
 ```
 
-**基準値は 236/237**（655 秒）。落ちるのは `stage_dem` の 1 件のみ
+**基準値は 237/238**（789 秒、2026-09-29）。落ちるのは `stage_dem` の 1 件のみ
 （upstream のバグ・環境と無関係）。**2 件以上落ちたら自分の変更を疑う。**
 `geometry.geometry` は 2026-08-30 に解決した（upstream が未初期化変数を修正）。
 
@@ -328,20 +328,18 @@ Python からは `isce3.__version__` で読める。実体は C++ 拡張モジ�
 2. HEAD がちょうどタグを指しているとハッシュは付かない（`0.26.0-dev` だけになる）
 3. 作業ツリーが汚れていると `-dirty` が付く（例: `0.26.0-dev+23f99329d-dirty`）
 
-### 現在ずれている理由（2026-09-10 時点）
+### 現在の状態（2026-09-29 時点）: ビルドとソースは一致している
 
-最後に configure / build したのは **2026-08-30**（当時の HEAD が `23f99329d`）。
-その後 upstream に 2 回追従したが、**入ったのは Python のみで C++ は無変更**なので
-再ビルドしていない。結果としてインストール済みの Python が **8 ファイル**古い。
+`01965c074`（upstream の最新）に追従したあと、差分ビルドとインストールをやり直した。
 
-```
-nisar/antenna/beamformer.py          nisar/products/insar/InSAR_base_writer.py
-nisar/antenna/pattern.py             nisar/products/readers/Raw/Raw.py
-nisar/mixed_mode/__init__.py         nisar/workflows/focus.py
-nisar/mixed_mode/logic.py            nisar/workflows/resample_slc_v2.py
-```
+- 版名は **`0.26.0-dev+01965c074`**。#384 で `CMakeLists.txt` が変わったため、ビルドの最初に
+  設定のやり直し（再 configure）が自動で走り、版名もそこで更新された
+- インストール先の `nisar` はソースと一致（`diff -rq`）。違いは `workflows/defaults` と
+  `workflows/schemas` だけで、これはインストール時に `share/nisar/` から入る正常なもの
+- フル ctest は 237/238（落ちるのは `stage_dem` のみ）
 
-**これらを使う作業をしないなら、そのままで問題ない。**
+（2026-08-30 〜 09-29 は、版名が `23f99329d` のまま Python だけ新しいという**ずれた状態**だった。
+C++ に変更が無い追従では再ビルドせず、`cmake --install` だけで Python をそろえていたため）
 
 ### 古くなっていないか確かめる手順
 
