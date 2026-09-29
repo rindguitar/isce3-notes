@@ -134,14 +134,31 @@ conda activate isce3
 |---|---|---|
 | `whirlwind-insar>=0.10.0` | #367（2026-09-14、位相アンラッピング） | insar・bandpass_insar・ionosphere・unwrap の 4 テストが `ModuleNotFoundError: No module named 'whirlwind'` で失敗し、フル ctest が 232/237 になる |
 
-手元の環境は 2026-08-23 に作ったので入っていない。導入はユーザーが実行する。
+手元の環境は 2026-08-23 に作ったので入っていなかった。**2026-09-29 に導入済み**（ユーザーが実行）。
 
 ```bash
 conda activate isce3
 # まず何が変わるかを確かめる（eigen<4 と pybind11<3 の固定が崩れないこと）
-conda install -c conda-forge "whirlwind-insar>=0.10.0" "eigen<4" "pybind11<3" --dry-run
-# 問題なければ --dry-run を外して実行する
+conda install -c conda-forge "whirlwind-insar>=0.10.0" "eigen<4" "pybind11<3" --solver classic --dry-run
+# 予定に問題がなければ --dry-run を外して実行する
+conda install -c conda-forge "whirlwind-insar>=0.10.0" "eigen<4" "pybind11<3" --solver classic
 ```
+
+⚠️ **`--solver classic` が必要。**conda 26.5.3 の標準の解決役（libmamba）は、conda-forge にある
+0.10.0 を拾えず `PackagesNotFoundInChannelsError` になる（`conda search` では見える。原因は未特定）。
+
+入れた結果（conda の履歴 rev 4）: `whirlwind-insar` 0.10.0 の追加と `openssl` 3.6.3 → 3.6.4 だけ。
+実行時に出る `conda-pypi` のベータ版の案内（WARNING）は無関係。
+
+### `--dry-run` の読み方（依存を足すときの確認）
+
+| 見出し | 意味 | 見ること |
+|---|---|---|
+| `NEW packages will be INSTALLED` | 新しく入る | 入れたいものだけか |
+| `UPDATED` / `DOWNGRADED` | 版が上がる／下がる | `eigen` `pybind11` が無いこと。ビルドに関わる `numpy` `gdal` `hdf5` `h5py` `python`・コンパイラ類が動かないこと |
+| `SUPERSEDED` / `REMOVED` | 別の配布元に置き換わる／消える | 同上 |
+
+実際に何が変わったかは、あとから **`conda list --revisions`** で確かめられる（最後の rev を見る）。
 
 ⚠️ upstream に追従したら、`git diff <前の SHA> <新しい SHA> -- environment.yml` で**依存の増減も確かめる**。
 

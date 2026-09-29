@@ -39,6 +39,10 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 - 🔴 **手元の環境に `whirlwind-insar` が無く、insar 系 4 テストが失敗する。フル ctest が 232/237 になる**
   （`environment.yml` には `0c775d7ae` の時点で載っている。環境が 8/23 作成で古い）
   → PR 前のフル ctest の前に導入が必要（ユーザーが実行。手順は `reference/environment.md`）
+- ✅ **`~/isce3` を `01965c074`（upstream の最新）に追従し、`whirlwind-insar` 0.10.0 を導入した**（ユーザーが実行）
+  - conda の標準の解決役（libmamba）では見つからず、**`--solver classic` が必要だった**
+  - 変わったのは `whirlwind-insar` の追加と `openssl` 3.6.3 → 3.6.4 だけ（eigen・pybind11 などは不変）
+  - ⬜ **差分ビルド・インストール・フル ctest はこれから**（#352 で C++ が変わったため再ビルドが要る）
 - 💡 サブエージェントの報告に誤りが 1 件あった（「PR が fixes と書いている」→ 題名で触れているだけ）。
   要所は自分で確かめる
 
@@ -649,7 +653,7 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
      - 再現手順: `drafts/再現手順-referenceTerrainHeight.md`（[notes #1](https://github.com/rindguitar/isce3-notes/issues/1) に投稿済み）
    - **PR も同時に出せる形**との評価（修正案 B は 2×2 検証済み）
      - ⚠️ **PR の前にフル ctest が必要**（upstream 追従後は未実行）。
-       **その前に `whirlwind-insar` の導入が要る**（無いと 232/237。`reference/environment.md`）
+       `whirlwind-insar` は 9/29 に導入済み。**`01965c074` への追従で再ビルドが必要**（#352 の C++ 変更）
      - 回帰テストも添える（テストコードに検査が 0 件なので新規）
    - 起票は `gh issue create`。⚠️ **`gh issue view` は使えない**ので確認は `gh api`
 2. **#255 `DateTime` の TZ 指定子未対応**

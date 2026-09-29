@@ -403,5 +403,8 @@ A と B の差は**両端の縁の帯**。1 次元経路が距離軸を RSLC の
 - **配布物 GCOV の `ceosAnalysisReadyData/geometricAccuracy` の NaN は既定値。**
   `copy_from_runconfig(..., default=np.nan)` で、配布物の runconfig にも項目が無い
 - **`whirlwind-insar` が無いと insar 系 4 テストが失敗する**（`reference/environment.md` に手順）
+- **conda 26.5.3 の標準の解決役（libmamba）は `whirlwind-insar` 0.10.0 を見つけられない。**
+  conda-forge には 9/11 から公開されていて（HTTP 200、ラベル `main`）、`conda search` にも出るのに、
+  `conda install` は `PackagesNotFoundInChannelsError` になる。`--solver classic` なら入る（原因は未特定）
 - nisar 系 61 テストは `-V` 付きで約 4 分（ctest の記録では約 1.5 分）
 
