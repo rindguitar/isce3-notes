@@ -26,6 +26,29 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 
 ## 前回やったこと
 
+2026-10-01（6 本目）: **wiki に、upstream への貢献で初めて使ったものを還元した。**
+
+- **新規ページ [GitHub の issue](https://github.com/rindguitar/isce3-notes/wiki/GitHub-Issue)**:
+  冒頭で伝わる書き方／**改行 1 つが `<br>` になる**（`gh api /markdown` で確かめる）／
+  SHA 付きの permalink／`#番号` の相互参照（図つき）／**自動で閉じる書き方**（題名では閉じない）／REST での起票
+- **既存 8 ページに追記**
+  - [プルリクエスト](https://github.com/rindguitar/isce3-notes/wiki/Pull-Request): **draft PR**・
+    **fork からの初めての PR は CI が承認待ち**（`action_required`）・レビュー後はコメントで伝える
+  - [git の基礎](https://github.com/rindguitar/isce3-notes/wiki/Git-Basics): **`-w` と `--word-diff`**・
+    **`worktree`**・**`--force-with-lease`**（中身が同じかは tree で確かめる）
+  - [fork と upstream](https://github.com/rindguitar/isce3-notes/wiki/Fork-And-Upstream): 追従したら確かめること（依存・テスト数・行番号）
+  - [conda](https://github.com/rindguitar/isce3-notes/wiki/Conda): **`--dry-run` の読み方**・`conda list --revisions`・
+    **solver が見つけられないとき**（`--solver classic`）・`environment.yml` は増える
+  - [ctest](https://github.com/rindguitar/isce3-notes/wiki/Ctest) と [pytest](https://github.com/rindguitar/isce3-notes/wiki/Pytest):
+    総数は upstream で変わる・`--show-only=json-v1`・`-k`・`-rP`
+  - [テストの全体像](https://github.com/rindguitar/isce3-notes/wiki/Testing-Overview): **回帰テストの作り方**
+    （修正前に落ち・修正後に通る／意味のある値で／別の経路と比べる）
+  - [Claude Code の運用](https://github.com/rindguitar/isce3-notes/wiki/Claude-Code-Operations): サブエージェントの報告を確かめる
+- ドキュメントマップを測り直した: **50 ページ / 111 本 / 孤立・リンク切れなし**。
+  「git と OSS」は 4 → 5 ページ・内部リンク 5 → 8 本で、密度が「高い」に上がった
+  - 「よく参照されるページ」は次数 6 以上をすべて載せた（前回は 12 行で、今回は 14 行）
+- 図は 2 枚（新規ページの相互参照、マップの開発環境）。描画して交差・貫通が無いことを確認済み
+
 2026-10-01（5 本目）: **🎉 #402 の修正を draft PR で出した: [isce-framework/isce3#403](https://github.com/isce-framework/isce3/pull/403)**
 
 - コミット `88e956121`（英語、**`Co-Authored-By` は付けない**とユーザーが判断）。fork に push し、`gh api` で draft PR を作成
