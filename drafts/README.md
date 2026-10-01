@@ -13,6 +13,7 @@ upstream（`isce-framework/isce3`）へ提出する前の文面と、その根�
 | ファイル | 用途 | 言語 | 状態 |
 |---|---|---|---|
 | [upstream-issue.md](upstream-issue.md) | **upstream に立てる issue の本文。**そのまま貼れる形 | 英語 | **投稿済み** → [upstream #402](https://github.com/isce-framework/isce3/issues/402)（2026-10-01。[PR #2](https://github.com/rindguitar/isce3-notes/pull/2) で承認） |
+| [upstream-pr.md](upstream-pr.md) | **upstream に出す PR の本文**（#402 の修正案）。issue の「A candidate fix」から抜粋 | 英語 | **下書き**（フル ctest の結果待ち） |
 | [upstream-issue-日本語対訳.md](upstream-issue-日本語対訳.md) | 対訳と**各節の意図**。投稿しない（確認・説明用） | 日本語 | 同上 |
 | [再現手順-referenceTerrainHeight.md](再現手順-referenceTerrainHeight.md) | 単独で成立する再現手順 | 日本語 | **投稿済み** → [notes #1](https://github.com/rindguitar/isce3-notes/issues/1) |
 

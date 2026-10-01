@@ -26,6 +26,24 @@ ISCE3 の専門分野は未学習なので、**まず起票で入り口を作り
 
 ## 前回やったこと
 
+2026-10-01（4 本目）: **#402 の修正 PR に着手した。修正とテストを書き、修正前は落ち・修正後は通ることを確認。**
+
+- `~/isce3` の develop を `127452609` に追従し、作業ブランチ **`fix-ref-terrain-height-1d-lut`** を切った
+  - 追従分に C++ の変更が 2 件・CMake の変更が 1 件 → **差分ビルドが必要**（ユーザーが実行）
+- **修正**: `BaseL2WriterSingleInput.py` の判定式と `if` の条件を `or` 版に（2×2 で検証したものと同一）。
+  コメントも新しい判定に合わせて書き直した（+15/-9 行）
+- **回帰テスト**: `tests/python/packages/nisar/workflows/gcov.py` に
+  `test_run_envisat_1d_reference_terrain_height` を追加（+92 行）
+  - upstream の書き方（`07a033f4f` もワークフローのテストで確かめていた）に合わせた
+  - **アジマス方向に変化する値**を入れた 1 次元版と、それを明示的に広げた 2 次元版を走らせ、
+    マスクと値の一致を確かめる（全ゼロでは複製の向きの誤りを見逃すため。レビュー 6 の指摘）
+  - 軸の無い場合はワークフローのテストでは作れない（`slantRange` を消すと他の LUT や本体が先に止まる）
+- ✅ **インストール先には触らず、一時コピーで確認**: 新しいテストは**修正前で失敗・修正後で合格**。
+  既存の gcov（3 件）・gslc（1 件）も合格し、`Access window` のエラーは 6 → 0
+- PR の本文の下書き: `drafts/upstream-pr.md`（issue の「A candidate fix」から抜粋、#402 を明記）
+- ⬜ 次: **差分ビルド・インストール・フル ctest（ユーザー）→ 237/238 と比較 → 英語でコミット →
+  fork にプッシュ → draft PR**
+
 2026-10-01（3 本目）: **🎉 upstream に issue を立てた: [isce-framework/isce3#402](https://github.com/isce-framework/isce3/issues/402)**
 
 - 本件初の upstream への起票。`gh api`（REST）で投稿し、保存された Title・Body が送ったものと一致することを確認
