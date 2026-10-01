@@ -59,7 +59,8 @@
 |---|---|---|---|
 | 2026-08-23 | 235/237 | 608 秒 | `GeometryTest.GeoToRdr` / `nisar.workflows.stage_dem` |
 | 2026-08-30 | 236/237 | 655 秒 | `nisar.workflows.stage_dem` のみ |
-| **2026-09-29** | **237/238** | 789 秒 | `nisar.workflows.stage_dem` のみ（`qfsp_ionosphere` が増えて 238 本。`whirlwind-insar` が必要） |
+| 2026-09-29 | 237/238 | 789 秒 | `nisar.workflows.stage_dem` のみ（`qfsp_ionosphere` が増えて 238 本。`whirlwind-insar` が必要） |
+| **2026-10-01** | **238/239** | 718 秒 | `nisar.workflows.stage_dem` のみ（upstream で `offsets_product` が増えて 239 本。#402 の修正入りで実行） |
 
 → **2 件以上落ちたら自分の変更を疑う。**
 
