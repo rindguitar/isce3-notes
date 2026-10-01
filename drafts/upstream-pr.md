@@ -42,7 +42,8 @@ Among 2-D inputs, the only one handled differently is a `referenceTerrainHeight`
   It fails without this change (the 1-D result is all NaN) and passes with it.
 * The existing GCOV and GSLC workflow tests still pass, and the `Access window out of range` errors they used to print are gone (6 → 0).
   The range-vector (crosstalk) path, checked by `test_run_winnipeg`, is unchanged.
-* Full ctest: 【フル ctest の結果を入れる】
+* Full ctest: 238/239 passed.
+  The only failure, `test.python.pkg.nisar.workflows.stage_dem`, also fails on `develop` without this change in this environment.
   Note that the existing tests also passed with the bug, so the full suite shows that nothing else broke; the new test is what shows the fix.
 
 Happy to adjust or drop this if you have a different treatment in mind.
