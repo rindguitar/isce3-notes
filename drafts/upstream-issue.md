@@ -46,7 +46,7 @@ If the 1-D case is already tracked somewhere, a pointer is all I need — I coul
   07a033f4f Update GCOV & GSLC writer to geocode 1-D LUTs (#2137)
   ```
 
-  `git blame` attributes the current lines to the same commit, and the condition is still present on `develop` as of `9a1f5a049`.
+  `git blame` attributes the current lines to the same commit, and the condition is still present on `develop` as of `127452609`.
 
 ## Symptom
 
